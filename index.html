@@ -1,0 +1,3529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Relaxation Recommendation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            margin: 0;
+            padding: 0;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #90caf9;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #b0b0b0;
+            font-style: italic;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #90caf9;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .button-group button {
+            padding: 12px 20px;
+            border: none;
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        .button-group button:hover {
+            background-color: #3a3a3a;
+        }
+        .button-group button.selected {
+            background-color: #4c7bb0;
+            color: white;
+        }
+        #recommendBtn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #4c7bb0, #5c8cc0);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-top: 20px;
+        }
+        #recommendBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 123, 176, 0.3);
+        }
+        #result {
+            margin-top: 30px;
+            display: none;
+        }
+        #result h2 {
+            color: #90caf9;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+        .recommendation-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .recommendation-item {
+            background-color: #2c2c2c;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4c7bb0;
+        }
+        .recommendation-item .category {
+            font-size: 12px;
+            color: #b0b0b0;
+            display: block;
+            margin-top: 8px;
+        }
+        .mbti-input {
+            padding: 12px;
+            width: 100%;
+            border: 1px solid #444;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background-color: #2c2c2c;
+            color: #e0e0e0;
+        }
+        .language-selector {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .language-btn {
+            background-color: #2c2c2c;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+        .language-btn.active {
+            background-color: #4c7bb0;
+            color: white;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #b0b0b0;
+            font-size: 14px;
+        }
+        .donation-container {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #2c2c2c;
+            border-radius: 10px;
+        }
+        .donation-title {
+            color: #90caf9;
+            margin-bottom: 10px;
+        }
+        .donation-text {
+            color: #b0b0b0;
+            margin-bottom: 15px;
+        }
+        .donate-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .donate-button {
+            padding: 10px 15px;
+            background: linear-gradient(to right, #4c7bb0, #5c8cc0);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        .donate-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 123, 176, 0.3);
+        }
+        
+        /* MBTI 선택 UI 스타일 */
+        .mbti-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .mbti-pair {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .mbti-label {
+            color: #90caf9;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        .mbti-result {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #b0b0b0;
+            text-align: center;
+        }
+        .mbti-result span {
+            color: #90caf9;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        @media (min-width: 768px) {
+            .mbti-pair {
+                flex-direction: row;
+                align-items: center;
+            }
+            .mbti-label {
+                width: 120px;
+                margin-bottom: 0;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin: 15px;
+                padding: 15px;
+            }
+            .button-group {
+                gap: 5px;
+            }
+            .button-group button {
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="header-title">Find Your Perfect Relaxation</h1>
+            <p class="subtitle" id="header-subtitle">Personalized recommendations based on who you are</p>
+        </header>
+        
+        <div class="form-group">
+            <label id="label-age">Age:</label>
+            <input type="number" id="age" class="mbti-input" placeholder="Enter your age">
+        </div>
+        
+        <div class="form-group">
+            <label id="label-personality">Personality:</label>
+            <div class="button-group" id="personality">
+                <button data-value="Introverted" id="btn-introverted">Introverted</button>
+                <button data-value="Extroverted" id="btn-extroverted">Extroverted</button>
+                <button data-value="Neutral" id="btn-neutral">Neutral</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label id="label-mbti">MBTI Type:</label>
+            <input type="hidden" id="mbti" class="mbti-input">
+            
+            <div class="mbti-selector">
+                <!-- I/E 선택 -->
+                <div class="mbti-pair">
+                    <div class="mbti-label">Introvert/Extrovert:</div>
+                    <div class="button-group">
+                        <button data-value="I" id="btn-mbti-i">Introvert (I)</button>
+                        <button data-value="E" id="btn-mbti-e">Extrovert (E)</button>
+                    </div>
+                </div>
+                
+                <!-- N/S 선택 -->
+                <div class="mbti-pair">
+                    <div class="mbti-label">Intuitive/Sensing:</div>
+                    <div class="button-group">
+                        <button data-value="N" id="btn-mbti-n">Intuitive (N)</button>
+                        <button data-value="S" id="btn-mbti-s">Sensing (S)</button>
+                    </div>
+                </div>
+                
+                <!-- F/T 선택 -->
+                <div class="mbti-pair">
+                    <div class="mbti-label">Feeling/Thinking:</div>
+                    <div class="button-group">
+                        <button data-value="F" id="btn-mbti-f">Feeling (F)</button>
+                        <button data-value="T" id="btn-mbti-t">Thinking (T)</button>
+                    </div>
+                </div>
+                
+                <!-- P/J 선택 -->
+                <div class="mbti-pair">
+                    <div class="mbti-label">Perceiving/Judging:</div>
+                    <div class="button-group">
+                        <button data-value="P" id="btn-mbti-p">Perceiving (P)</button>
+                        <button data-value="J" id="btn-mbti-j">Judging (J)</button>
+                    </div>
+                </div>
+            </div>
+            <div class="mbti-result">
+                <span id="selected-mbti-label">Selected MBTI:</span> <span id="selected-mbti">----</span>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label id="label-mood">Current Mood:</label>
+            <div class="button-group" id="mood">
+                <button data-value="Tired" id="btn-tired">Tired</button>
+                <button data-value="Stressed" id="btn-stressed">Stressed</button>
+                <button data-value="Sad" id="btn-sad">Sad</button>
+                <button data-value="Energetic" id="btn-energetic">Energetic</button>
+                <button data-value="Anxious" id="btn-anxious">Anxious</button>
+                <button data-value="Bored" id="btn-bored">Bored</button>
+                <button data-value="Happy" id="btn-happy">Happy</button>
+                <button data-value="Angry" id="btn-angry">Angry</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label id="label-weather">Current Weather:</label>
+            <div class="button-group" id="weather">
+                <button data-value="Sunny" id="btn-sunny">Sunny</button>
+                <button data-value="Rainy" id="btn-rainy">Rainy</button>
+                <button data-value="Cloudy" id="btn-cloudy">Cloudy</button>
+                <button data-value="Snowy" id="btn-snowy">Snowy</button>
+                <button data-value="Hot" id="btn-hot">Hot</button>
+                <button data-value="Cold" id="btn-cold">Cold</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label id="label-health">Health Status:</label>
+            <div class="button-group" id="health">
+                <button data-value="Healthy" id="btn-healthy">Healthy</button>
+                <button data-value="MildlyUnwell" id="btn-mildly-unwell">Mildly Unwell</button>
+                <button data-value="ChronicPain" id="btn-chronic-pain">Chronic Pain</button>
+                <button data-value="LimitedMobility" id="btn-limited-mobility">Limited Mobility</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label id="label-time">Available Time:</label>
+            <div class="button-group" id="time">
+                <button data-value="5min" id="btn-5min">5 minutes</button>
+                <button data-value="15min" id="btn-15min">15 minutes</button>
+                <button data-value="30min" id="btn-30min">30 minutes</button>
+                <button data-value="1hour" id="btn-1hour">1 hour or more</button>
+            </div>
+        </div>
+        
+        <button id="recommendBtn">Get Personalized Recommendations</button>
+        
+        <!-- 결과 창의 HTML 코드에 소셜 미디어 공유 버튼 추가 -->
+<div id="result">
+    <h2 id="result-title">Your Personalized Recommendations</h2>
+    <ul class="recommendation-list" id="recommendations">
+        <!-- Recommendations will be inserted here -->
+    </ul>
+    
+    <!-- 소셜 미디어 공유 버튼 추가 -->
+    <div class="social-share-container">
+        <h3 id="share-title">Share Your Recommendations</h3>
+        <div class="social-buttons">
+            <button class="social-button facebook" id="share-facebook">
+                <i class="social-icon">f</i> Facebook
+            </button>
+            <button class="social-button instagram" id="share-instagram">
+                <i class="social-icon">📸</i> Instagram
+            </button>
+            <button class="social-button tiktok" id="share-tiktok">
+                <i class="social-icon">🎵</i> TikTok
+            </button>
+        </div>
+    </div>
+</div>
+        
+        <div class="donation-container">
+            <h3 class="donation-title" id="donation-title">Support Us</h3>
+            <p class="donation-text" id="donation-text">If you find this site helpful, consider making a small donation to support us!</p>
+            <div class="donate-buttons">
+                <form action="https://www.paypal.com/donate" method="post" target="_blank">
+                    <input type="hidden" name="business" value="oyusc5588@gmail.com" />
+                    <input type="hidden" name="currency_code" value="USD" />
+                    <input type="hidden" name="amount" value="5" />
+                    <button type="submit" class="donate-button" id="donate-five">Donate $5</button>
+                </form>
+                <form action="https://www.paypal.com/donate" method="post" target="_blank">
+                    <input type="hidden" name="business" value="oyusc5588@gmail.com" />
+                    <input type="hidden" name="currency_code" value="USD" />
+                    <input type="hidden" name="amount" value="10" />
+                    <button type="submit" class="donate-button" id="donate-ten">Donate $10</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="language-selector">
+            <button class="language-btn active" data-lang="en">English</button>
+            <button class="language-btn" data-lang="ko">한국어</button>
+            <button class="language-btn" data-lang="zh">中文</button>
+            <button class="language-btn" data-lang="ja">日本語</button>
+        </div>
+        
+        <div class="footer">
+            <p id="footer-text">© 2025 Relaxation Recommender. All recommendations are based on your personal profile.</p>
+        </div>
+    </div>
+
+    <script>
+        // 확장된 휴식 추천 라이브러리
+        const relaxationLibrary = {
+            // 기분 기반 추천 (Mood-based recommendations)
+            mood: {
+                "Tired": [
+                    "Take a 20-minute power nap in a quiet, dark room",
+                    "Practice gentle stretching exercises focusing on your neck and shoulders",
+                    "Drink a cup of herbal tea (chamomile or peppermint) while listening to soft music",
+                    "Take a warm shower with lavender essential oil",
+                    "Do some light yoga poses focusing on relaxation",
+                    "Listen to a sleep story or guided meditation",
+                    "Practice 4-7-8 breathing technique (inhale for 4, hold for 7, exhale for 8)",
+                    "Try a face massage with cool water",
+                    "Diffuse energizing essential oils like citrus or peppermint",
+                    "Try a 10-minute body scan meditation while lying down",
+                    "Give yourself a calming foot massage",
+                    "Take a short rest with nature sounds (rain, waves, birdsong) in the background",
+                    "Sit in a quiet space, close your eyes, and take deep breaths",
+                    "Drink warm milk or golden latte (turmeric drink)",
+                    "Lie down for 10 minutes wearing a moistened eye mask"
+                ],
+                "Stressed": [
+                    "Practice deep breathing for 5 minutes",
+                    "Take a short walk outdoors, focusing on your surroundings",
+                    "Listen to calming nature sounds",
+                    "Try progressive muscle relaxation (tensing and releasing muscle groups)",
+                    "Write down your thoughts and worries in a journal",
+                    "Practice mindfulness meditation focusing on present sensations",
+                    "Engage in a creative activity like drawing or coloring",
+                    "Use a stress ball or fidget toy",
+                    "Try aromatherapy with lavender or sandalwood",
+                    "Gentle shoulder and neck stretches to release tension",
+                    "Drink herbal tea that reduces anxiety (chamomile, lavender, valerian)",
+                    "Take a warm bath or shower to release muscle tension",
+                    "Try guided imagery meditation with soft music or a meditation app",
+                    "Release facial tension with face yoga or facial massage",
+                    "Take 5 minutes of doing absolutely nothing (thoughtless time)"
+                ],
+                "Sad": [
+                    "Watch a funny video or comedy show",
+                    "Call a friend or family member for a chat",
+                    "Spend time with a pet",
+                    "Write down three things you're grateful for",
+                    "Look at photos of happy memories",
+                    "Listen to uplifting music",
+                    "Engage in a creative hobby you enjoy",
+                    "Practice self-compassion meditation",
+                    "Take a warm bath with essential oils",
+                    "Get some sunlight, even just sitting by a window",
+                    "Read comforting passages from your favorite book",
+                    "Write a kind message or handwritten note to someone else",
+                    "Treat yourself with a small gift or flowers",
+                    "Visit a place with happy memories",
+                    "Write a poem or text expressing your emotions"
+                ],
+                "Energetic": [
+                    "Go for a run or brisk walk",
+                    "Dance to your favorite upbeat music",
+                    "Try a home workout or fitness video",
+                    "Do some gardening or rearrange furniture",
+                    "Clean and organize a space in your home",
+                    "Start a creative project you've been thinking about",
+                    "Play an active game (solo or with others)",
+                    "Cook a new recipe",
+                    "Practice a musical instrument",
+                    "Try high-intensity interval training (HIIT)",
+                    "Go biking or skating",
+                    "Explore a hiking or climbing route",
+                    "Learn a new dance routine or exercise",
+                    "Participate in a sports activity",
+                    "Take care of household tasks you've been putting off"
+                ],
+                "Anxious": [
+                    "Practice grounding exercises (name 5 things you can see, 4 you can touch, etc.)",
+                    "Try box breathing (equal counts of inhale, hold, exhale, hold)",
+                    "Write down anxious thoughts and challenge them",
+                    "Engage in a repetitive activity like knitting or crochet",
+                    "Listen to a guided anxiety-relief meditation",
+                    "Take a short walk focusing on your steps and breath",
+                    "Hold and squeeze a stress ball or ice cube",
+                    "Try progressive muscle relaxation",
+                    "Visualize a calm, safe place in detail",
+                    "Engage in a detailed cleaning task requiring focus",
+                    "Practice mindfulness by consciously focusing on body sensations",
+                    "Try cognitive restructuring to evaluate the reality of your worries",
+                    "Hold a warm drink and focus on the sensations",
+                    "Draw a picture expressing your anxiety experience",
+                    "Try calming yoga poses (child's pose, legs up the wall pose)"
+                ],
+                "Bored": [
+                    "Learn something new on a free online course",
+                    "Read a book from a genre you don't usually pick",
+                    "Try a new recipe or cooking technique",
+                    "Start a DIY project",
+                    "Rearrange or redecorate a room",
+                    "Make a playlist of new music to discover",
+                    "Start a journal or blog",
+                    "Try geocaching or a scavenger hunt app",
+                    "Call a friend you haven't talked to in a while",
+                    "Plan a future trip or activity in detail",
+                    "Create or update your bucket list",
+                    "Learn a few words in a new language",
+                    "Take a virtual museum tour or online exhibition",
+                    "Try a puzzle, sudoku, or crossword",
+                    "Explore a new area in your neighborhood"
+                ],
+                "Happy": [
+                    "Write down what's making you happy to revisit later",
+                    "Share your joy with someone else",
+                    "Dance to your favorite upbeat songs",
+                    "Take photos to capture the moment",
+                    "Express gratitude through journaling or telling others",
+                    "Do something kind for someone else",
+                    "Spend time in nature appreciating your surroundings",
+                    "Create something artistic inspired by your mood",
+                    "Try something new while you have positive energy",
+                    "Practice mindfulness to fully experience your happiness",
+                    "Cook your favorite food or enjoy a delicious meal",
+                    "Create a small ritual to celebrate your happiness",
+                    "Make a list of activities that make you feel good",
+                    "Write a letter about your happy memories",
+                    "Do some exercise to invigorate your positive emotions"
+                ],
+                "Angry": [
+                    "Do physical exercise to release tension",
+                    "Practice deep breathing with longer exhales",
+                    "Write down your feelings without censoring",
+                    "Scream into or punch a pillow",
+                    "Listen to calming music",
+                    "Take a time-out from the situation",
+                    "Use visualization to imagine your anger flowing away",
+                    "Take a cold shower or splash cold water on your face",
+                    "Count slowly to 10 before responding",
+                    "Try a quick body scan meditation to identify tension",
+                    "Draw a picture to explore and express emotions",
+                    "Journal about the reasons for your anger",
+                    "Use calming essential oils (lavender, bergamot)",
+                    "Practice compassion meditation for yourself and the object of your anger",
+                    "Try tapping techniques to release tension"
+                ]
+            },
+            
+            // 날씨 기반 추천 (Weather-based recommendations)
+            weather: {
+                "Sunny": [
+                    "Take a nature walk and focus on the warmth of the sun",
+                    "Practice outdoor yoga in a park or garden",
+                    "Have a picnic lunch outdoors",
+                    "Read a book in natural daylight",
+                    "Do some gardening or plant care",
+                    "Take photographs of nature in the sunlight",
+                    "Go for a bicycle ride",
+                    "Practice outdoor meditation focusing on sun sensations",
+                    "Try forest bathing in a sunny woodland",
+                    "Hang laundry outside and enjoy the fresh air",
+                    "Visit a local farmers market",
+                    "Paint with watercolors in the sunshine",
+                    "Spend time at an outdoor cafe or coffee shop",
+                    "Spend time near water (lake, river, sea)",
+                    "Sunbathe and get some vitamin D"
+                ],
+                "Rainy": [
+                    "Watch the rain while drinking hot tea or coffee",
+                    "Read a book or magazine while listening to the raindrops",
+                    "Take a warm bath with essential oils",
+                    "Practice indoor yoga or stretching",
+                    "Bake something comforting",
+                    "Write in a journal or start a creative writing project",
+                    "Watch a cozy movie or documentary",
+                    "Create a blanket fort and relax inside",
+                    "Do a jigsaw puzzle or play a board game",
+                    "Practice meditation focusing on the rain sounds",
+                    "Cook a warm soup or stew",
+                    "Sort through old photo albums or memory boxes",
+                    "Draw or sketch at a window overlooking the rain",
+                    "Trim and care for indoor plants",
+                    "Create a playlist of music that goes well with rainy days"
+                ],
+                "Cloudy": [
+                    "Visit a museum or indoor garden",
+                    "Organize a small space in your home",
+                    "Try a new recipe",
+                    "Have a movie marathon",
+                    "Read a book you've been meaning to finish",
+                    "Practice gentle indoor exercises",
+                    "Call or message old friends",
+                    "Work on a craft project",
+                    "Listen to a podcast or audiobook",
+                    "Take a short drive to somewhere new",
+                    "Practice minimalism by sorting through unnecessary items",
+                    "Learn a new skill through an online course or tutorial",
+                    "Light candles and create a cozy atmosphere",
+                    "Spend time at a quiet cafe",
+                    "Create an indoor garden or terrarium"
+                ],
+                "Snowy": [
+                    "Make a hot beverage and watch the snow fall",
+                    "Read a book under a warm blanket",
+                    "Bake cookies or bread",
+                    "Take photos of the snowy landscape",
+                    "Build a snowman or go sledding if possible",
+                    "Practice indoor stretching or yoga",
+                    "Write winter-inspired poetry or stories",
+                    "Have a warm bath with essential oils",
+                    "Sort through old photos or keepsakes",
+                    "Make a warm soup or stew",
+                    "Make a bird feeder for winter birds and place it outside your window",
+                    "Create a cozy reading nook with candles",
+                    "Play board games with family or friends",
+                    "Enjoy hot chocolate or spiced tea",
+                    "Draw the snowy landscape from your window"
+                ],
+                "Hot": [
+                    "Take a cool shower or bath",
+                    "Practice slow, cooling yoga poses",
+                    "Make homemade ice pops or smoothies",
+                    "Read in front of a fan or air conditioner",
+                    "Visit an air-conditioned venue like a library or mall",
+                    "Do gentle water exercises in a pool if available",
+                    "Practice meditation focusing on cooling visualizations",
+                    "Create a DIY facial mist with cool water and essential oils",
+                    "Listen to relaxing music with a cold compress on your neck",
+                    "Mist plants and enjoy the cooler air around them",
+                    "Eat cool watermelon or fruit salad",
+                    "Soak your feet in cool water",
+                    "Change into light, breathable clothing",
+                    "Wipe your face and neck with a cool towel kept in the refrigerator",
+                    "Take a short walk early in the morning or late in the evening"
+                ],
+                "Cold": [
+                    "Wrap up in a warm blanket with a hot drink",
+                    "Take a hot bath with epsom salts",
+                    "Bake something warming that fills the home with aroma",
+                    "Do gentle indoor exercises to generate heat",
+                    "Practice yoga focusing on warming poses",
+                    "Use a hot water bottle or heating pad for comfort",
+                    "Make a hot soup or stew",
+                    "Read under warm blankets with good lighting",
+                    "Practice meditation focusing on inner warmth",
+                    "Wear warm socks and do foot stretches",
+                    "Drink fragrant tea with cinnamon, cloves, or ginger",
+                    "Light candles and use warm-toned lighting",
+                    "Cook warming foods (oatmeal, porridge, stews)",
+                    "Share physical affection (hugs, etc.) to share body warmth",
+                    "Try a warm hand massage or foot massage"
+                ]
+            },
+            
+            // 건강 상태 기반 추천 (Health-based recommendations)
+            health: {
+                "Healthy": [
+                    "Try a new physical activity or workout",
+                    "Practice dynamic yoga or pilates",
+                    "Go hiking or swimming",
+                    "Learn a new dance routine",
+                    "Try interval training",
+                    "Do bodyweight exercises in the park",
+                    "Join a recreational sports team or club",
+                    "Take up running or cycling",
+                    "Practice advanced meditation postures",
+                    "Try balance-focused exercises like slacklining",
+                    "Explore new healthy recipes",
+                    "Challenge yourself with a long hike or trek",
+                    "Join a CrossFit or other high-intensity workout class",
+                    "Try racket sports like tennis, badminton, or squash",
+                    "Challenge yourself with planks, push-ups, or burpees"
+                ],
+                "MildlyUnwell": [
+                    "Practice gentle stretching while seated",
+                    "Take a short, slow walk if able",
+                    "Do deep breathing exercises",
+                    "Listen to a guided relaxation audio",
+                    "Take a warm bath or shower",
+                    "Practice seated or lying down meditation",
+                    "Use aromatherapy with eucalyptus or peppermint",
+                    "Watch a comforting show or movie",
+                    "Listen to soothing music",
+                    "Try gentle hand and foot massage",
+                    "Drink plenty of water to help your body recover",
+                    "Drink warm lemon water, honey, and ginger tea",
+                    "Eat nutritious soup that aids recovery",
+                    "Listen to a comforting audiobook or podcast",
+                    "Do light self-care activities (manicure, moisturizing, etc.)"
+                ],
+               "ChronicPain": [
+                    "Practice gentle water exercises",
+                    "Try mindful body scanning focusing on relaxing non-painful areas",
+                    "Use heat or cold therapy as recommended by a doctor",
+                    "Practice very gentle yoga with modifications",
+                    "Listen to guided pain management meditation",
+                    "Try distraction techniques like engaging puzzles",
+                    "Use cushions and supports for comfort while relaxing",
+                    "Practice breathwork specifically for pain management",
+                    "Try TENS therapy if approved by your doctor",
+                    "Use gentle self-massage around (not on) painful areas",
+                    "Keep a diary tracking pain levels and patterns",
+                    "Try cognitive behavioral therapy (CBT) techniques to change how you think about pain",
+                    "Do prescribed stretches or physical therapy exercises consistently",
+                    "Eat anti-inflammatory foods like acai berries, ginger, and turmeric",
+                    "Use a heating blanket or heating pad to soothe muscles"
+                ],
+                "LimitedMobility": [
+                    "Practice seated yoga or chair exercises",
+                    "Try upper body stretches while seated",
+                    "Do breathing exercises focusing on chest expansion",
+                    "Use resistance bands for gentle strength work",
+                    "Practice visualization meditations",
+                    "Try seated tai chi movements",
+                    "Use a stress ball or finger exercises",
+                    "Practice mindfulness of sensations in mobile parts",
+                    "Try audio-guided relaxation focusing on breath",
+                    "Do eye exercises and facial relaxation",
+                    "Do water exercises adapted to your current abilities",
+                    "Stretch in bed or seated positions within your range",
+                    "Create an ergonomic environment that maximizes mobility",
+                    "Do crafts or art activities using your hands",
+                    "Practice positive self-talk and self-acceptance"
+                ]
+            },
+            
+            // 성격 기반 추천 (Personality-based recommendations)
+            personality: {
+                "Introverted": [
+                    "Read a book in a quiet corner",
+                    "Practice solo meditation or yoga",
+                    "Take a solitary nature walk",
+                    "Journal or creative writing",
+                    "Listen to a podcast or audiobook",
+                    "Work on a craft or hobby project alone",
+                    "Create a personal relaxation space",
+                    "Try gardening or plant care",
+                    "Take a long bath with a book",
+                    "Practice mindful cooking for one",
+                    "Visit a museum or gallery alone",
+                    "Spend time alone at a quiet café",
+                    "Do personal reflection or thought organization",
+                    "Play puzzles or games that can be enjoyed alone",
+                    "Spend quiet time in nature"
+                ],
+                "Extroverted": [
+                    "Call a friend for a catch-up",
+                    "Join a group fitness class",
+                    "Organize a small gathering",
+                    "Volunteer for a community event",
+                    "Take a class to learn something new with others",
+                    "Join a walking group or club",
+                    "Participate in team sports",
+                    "Attend a workshop or seminar",
+                    "Join a book club or discussion group",
+                    "Host a game night or dinner party",
+                    "Attend community events or festivals",
+                    "Take a cooking class or cook with friends",
+                    "Plan a group trip or day outing",
+                    "Attend concerts, plays, or comedy shows",
+                    "Watch or cheer at sporting events"
+                ],
+                "Neutral": [
+                    "Try activities that balance social and solo time",
+                    "Join a drop-in class where socializing is optional",
+                    "Take a workshop where you can work independently but near others",
+                    "Join a community garden where you can choose your level of interaction",
+                    "Try a coffee shop work session where you control your environment",
+                    "Participate in a group meditation where there's limited social pressure",
+                    "Take a self-guided museum tour",
+                    "Join a library reading group",
+                    "Try a hobby class with independent work time",
+                    "Go to a concert or performance where you can enjoy your own experience",
+                    "Have a quiet meal with one or two friends",
+                    "Go on a small group hike or nature walk",
+                    "Visit a festival where you can explore individually while interacting with others",
+                    "Read at a café where you can be alone or with friends",
+                    "Join an online community focused on your interests"
+                ]
+            },
+            
+            // MBTI 기반 추천 (MBTI-based recommendations)
+            mbti: {
+                // I/E (내향/외향) 기반
+                "I": [
+                    "Read a book alone",
+                    "Take personal meditation time",
+                    "Research a topic in depth",
+                    "Create in a quiet environment",
+                    "Spend time alone in nature",
+                    "Journal for inner exploration",
+                    "Work deeply on a personal project",
+                    "Immerse deeply in one hobby",
+                    "Take a self-paced online course",
+                    "Spend time in a quiet café",
+                    "Visit a museum or art gallery alone",
+                    "Have personal music appreciation time",
+                    "Exercise independently (yoga, running)",
+                    "Watch a book or movie in a quiet space",
+                    "Take a walk alone to organize thoughts"
+                ],
+                "E": [
+                    "Meet up with friends",
+                    "Join group activities or team projects",
+                    "Attend workshops with lots of discussion",
+                    "Participate in team sports or group fitness",
+                    "Attend events where you can meet new people",
+                    "Plan spontaneous trips or adventures",
+                    "Volunteer or participate in social activities",
+                    "Enjoy live music or performances",
+                    "Cook or share meals with friends",
+                    "Play group games or team challenges",
+                    "Work in cafes or spaces with people",
+                    "Reach out to contacts to catch up",
+                    "Attend social networking events",
+                    "Organize group trips or outings",
+                    "Host parties or social gatherings"
+                ],
+                
+                // N/S (직관/감각) 기반
+                "N": [
+                    "Brainstorm future goals or visions",
+                    "Explore abstract concepts or theories",
+                    "Write creatively or compose poetry",
+                    "Read about new ideas or innovations",
+                    "Ponder philosophical questions or dilemmas",
+                    "Analyze future trends or possibilities",
+                    "Create original artwork",
+                    "Try complex puzzles or strategy games",
+                    "Design new systems or processes",
+                    "Read with focus on big picture and patterns",
+                    "Enjoy fiction or fantasy that stimulates imagination",
+                    "Journal about possibilities and potential",
+                    "Try experimental and creative cooking",
+                    "Draw mind maps connecting various topics",
+                    "Set future-oriented goals and plans"
+                ],
+                "S": [
+                    "Enjoy practical, concrete activities",
+                    "Practice mindfulness focusing on present moment and sensations",
+                    "Work on crafts or DIY projects involving hands",
+                    "Follow recipes with precise steps",
+                    "Garden or care for plants",
+                    "Practice meditation using all five senses",
+                    "Try hobbies requiring precision (origami, model building)",
+                    "Attend workshops for practical skill improvement",
+                    "Focus on real experiences in nature",
+                    "Enjoy physical activities or sports",
+                    "Organize and improve spaces",
+                    "Read fact-based documentaries or non-fiction",
+                    "Seek experiences that stimulate the senses",
+                    "Learn about anatomy or physical processes",
+                    "Organize collections or make lists"
+                ],
+                
+                // F/T (감정/사고) 기반
+                "F": [
+                    "Journal about emotions and values",
+                    "Volunteer helping others",
+                    "Create art expressing emotions",
+                    "Read books about deep human connections",
+                    "Practice empathy and listening",
+                    "Meditate focusing on emotional wellbeing",
+                    "Find activities aligned with personal values",
+                    "Watch human-centered stories or films",
+                    "Have meaningful conversations",
+                    "Do activities promoting harmony with others",
+                    "Practice compassion meditation for self and others",
+                    "Read inspiring stories or poetry",
+                    "Keep a gratitude journal",
+                    "Express emotions through music or art",
+                    "Develop emotional intelligence"
+                ],
+                "T": [
+                    "Solve problems or puzzles",
+                    "Try activities requiring logical thinking",
+                    "Improve efficiency or systems",
+                    "Read books stimulating critical thinking",
+                    "Create strategic plans",
+                    "Work on projects requiring objective analysis",
+                    "Explore scientific principles or theories",
+                    "Play games with logical structures",
+                    "Practice fact and data-based decision making",
+                    "Learn technical devices or software",
+                    "Analyze problems through logical consistency",
+                    "Request and evaluate objective feedback",
+                    "Organize information systematically",
+                    "Build knowledge through experiences",
+                    "Watch documentaries stimulating analytical thinking"
+                ],
+                
+                // P/J (인식/판단) 기반
+                "P": [
+                    "Enjoy spontaneous and flexible schedules",
+                    "Explore new experiences or places",
+                    "Investigate multiple options or possibilities",
+                    "Try spontaneous creative activities",
+                    "Enjoy free-flowing conversations or brainstorming",
+                    "Explore various hobbies or interests",
+                    "Be open to new ideas or approaches",
+                    "Plan spontaneous travel or adventures",
+                    "Spend a day without plans, going with the flow",
+                    "Participate in activities requiring adaptability",
+                    "Explore new environments or situations",
+                    "Consider different perspectives or options",
+                    "Create in free-form formats",
+                    "Enjoy discovery through process",
+                    "Prioritize spontaneity over planning"
+                ],
+                "J": [
+                    "Create structured schedules or routines",
+                    "Set goals and plans for achievement",
+                    "Organize spaces",
+                    "Complete projects",
+                    "Participate in activities with clear steps",
+                    "Improve time management skills",
+                    "Make checklists or lists",
+                    "Prepare for travel in organized ways",
+                    "Solve problems with systematic approaches",
+                    "Make decisions and act on them",
+                    "Create plans for long-term goals",
+                    "Build consistent habits or routines",
+                    "Control and organize environments",
+                    "Prepare for planned events or activities",
+                    "Set deadlines for sense of accomplishment"
+                ],
+                
+                // 전체 MBTI 유형별 추천
+                "INTJ": [
+                    "Play strategic thinking games or puzzles",
+                    "Read non-fiction on topics of interest",
+                    "Create a detailed personal development plan",
+                    "Learn a complex skill independently",
+                    "Plan and organize a space for maximum efficiency",
+                    "Deep-dive research into a fascinating topic",
+                    "Create systems to optimize daily routines",
+                    "Listen to intellectually stimulating podcasts",
+                    "Develop a long-term project with clear goals",
+                    "Try mindfulness meditation to balance analytical thinking",
+                    "Create a vision board for future goals",
+                    "Develop efficient time management systems",
+                    "Explore philosophical or theoretical concepts",
+                    "Develop strategies for solving complex problems",
+                    "Build and connect systems of knowledge"
+                ],
+                "INTP": [
+                    "Explore philosophical concepts through reading or podcasts",
+                    "Solve complex puzzles or logic problems",
+                    "Learn about a new theoretical concept",
+                    "Engage in thought experiments",
+                    "Take apart and rebuild something to understand how it works",
+                    "Create a personal system or framework for understanding a topic",
+                    "Dive into rabbit holes of interesting information",
+                    "Engage in debates or discussions in online forums",
+                    "Experiment with creative problem-solving",
+                    "Try meditation focused on observing thought patterns",
+                    "Watch documentaries that stimulate intellectual curiosity",
+                    "Analyze logical consistency and thought systems",
+                    "Explore complex systems or theories",
+                    "Find connections between different fields of knowledge",
+                    "Enjoy thought experiments or theoretical analysis"
+                ],
+                "ENTJ": [
+                    "Plan and organize a future project or goal",
+                    "Listen to leadership podcasts or audiobooks",
+                    "Mentor someone in an area of expertise",
+                    "Participate in strategic games with others",
+                    "Join or lead a discussion group",
+                    "Create efficiency systems for everyday tasks",
+                    "Practice public speaking or presentation skills",
+                    "Learn about business strategies or leadership techniques",
+                    "Network with like-minded individuals",
+                    "Try meditation focused on achieving mental clarity",
+                    "Set up action plans for goal achievement",
+                    "Develop effective teamwork strategies",
+                    "Read biographies of influential leaders",
+                    "Improve decision-making processes",
+                    "Design innovative systems or processes"
+                ],
+                "ENTP": [
+                    "Debate interesting concepts with friends",
+                    "Brainstorm solutions to interesting problems",
+                    "Try an improvisation or creative thinking exercise",
+                    "Start a new project that involves innovation",
+                    "Explore unusual or unconventional ideas",
+                    "Join a group discussion on a complex topic",
+                    "Learn about multiple perspectives on a subject",
+                    "Try a new experience or activity you've never done before",
+                    "Share and discuss interesting ideas with others",
+                    "Practice mindfulness to connect with the present moment",
+                    "Develop experimental or innovative solutions",
+                    "Find patterns connecting diverse fields",
+                    "Explore creative expression or art forms",
+                    "Explore various topics to satisfy intellectual curiosity",
+                    "Design experiments to test ideas"
+                ],
+                "INFJ": [
+                    "Journal about your feelings and insights",
+                    "Create art that expresses your inner world",
+                    "Have a deep, meaningful conversation with a close friend",
+                    "Read literature or poetry that resonates emotionally",
+                    "Volunteer for a cause you care about",
+                    "Practice mindfulness meditation",
+                    "Engage in creative writing or storytelling",
+                    "Take a solo walk in nature to reflect",
+                    "Listen to music that evokes deep emotions",
+                    "Plan ways to make positive changes in your community",
+                    "Engage in service activities for others' wellbeing",
+                    "Reflect on inner meaning and purpose",
+                    "Understand human psychology and behavior",
+                    "Develop inspiring visions for the future",
+                    "Help others with personal growth"
+                ],
+                "INFP": [
+                    "Create art or write creatively with no pressure",
+                    "Spend time in nature connecting with your surroundings",
+                    "Journal about your feelings, dreams, and ideas",
+                    "Read fiction that transports you to another world",
+                    "Listen to music that resonates with your emotions",
+                    "Engage in activities that align with your personal values",
+                    "Have a deep conversation with a trusted friend",
+                    "Daydream and explore your imagination",
+                    "Create a personal ritual that feels meaningful",
+                    "Practice meditation focused on compassion and connection",
+                    "Explore your values and passions",
+                    "Explore art forms for creative self-expression",
+                    "Read literature about human experiences and emotions",
+                    "Engage in causes that are personally meaningful",
+                    "Practice emotional honesty and authenticity"
+                ],
+                "ENFJ": [
+                    "Organize a gathering that brings people together",
+                    "Volunteer for a cause you're passionate about",
+                    "Have meaningful conversations with friends",
+                    "Mentor or teach someone a skill",
+                    "Participate in group activities that help others",
+                    "Join or facilitate a support group",
+                    "Create something that inspires others",
+                    "Listen to personal development content",
+                    "Practice empathetic listening with a friend",
+                    "Try meditation focused on universal compassion",
+                    "Organize community events or gatherings",
+                    "Support others' growth and development",
+                    "Understand human relationships and group dynamics",
+                    "Advocate for positive social change",
+                    "Develop empathy and emotional intelligence"
+                ],
+                "ENFP": [
+                    "Brainstorm creative ideas or future possibilities",
+                    "Try a new art form or creative expression",
+                    "Have spontaneous conversations with diverse people",
+                    "Explore a new area of your city or nature",
+                    "Join a class or workshop that sparks your curiosity",
+                    "Create something that expresses your authentic self",
+                    "Host a gathering with a unique theme or activity",
+                    "Learn about topics that fascinate you",
+                    "Share stories and experiences with others",
+                    "Practice meditation that encourages free flow of ideas",
+                    "Explore various interests and passions",
+                    "Express rich imagination and creativity",
+                    "Seek new experiences and adventures",
+                    "Consider diverse perspectives and possibilities",
+                    "Provide inspiration and encouragement to others"
+                ],
+                "ISTJ": [
+                    "Organize a personal space or collection",
+                    "Engage in a structured hobby with clear guidelines",
+                    "Research a topic of interest in detail",
+                    "Complete a crossword or sudoku puzzle",
+                    "Create a routine that optimizes your day",
+                    "Work on practical DIY projects around the home",
+                    "Read non-fiction on topics of interest",
+                    "Maintain and care for possessions",
+                    "Review and update personal records or finances",
+                    "Practice meditation focused on order and clarity",
+                    "Set priorities and make systematic plans",
+                    "Develop practical skills and knowledge",
+                    "Maintain consistent routines and patterns",
+                    "Pay attention to details",
+                    "Understand traditional values and history"
+                ],
+                "ISFJ": [
+                    "Create comfort for yourself or others through cooking or baking",
+                    "Organize a photo album or keepsakes",
+                    "Do something kind for a loved one",
+                    "Engage in traditional crafts like knitting or quilting",
+                    "Keep a gratitude journal about your relationships",
+                    "Care for plants or garden",
+                    "Volunteer to help those in need",
+                    "Read books that highlight human connections",
+                    "Practice self-care routines that nurture your body",
+                    "Try gentle meditation focused on care and compassion",
+                    "Maintain family traditions or rituals",
+                    "Find security in reliable environments",
+                    "Provide stable support for loved ones",
+                    "Serve others in practical ways",
+                    "Create harmonious environments and relationships"
+                ],
+                "ESTJ": [
+                    "Organize a social event with clear activities",
+                    "Lead a group project or activity",
+                    "Create or update a personal or household schedule",
+                    "Participate in community organizations",
+                    "Engage in physical activities with clear rules",
+                    "Make plans for achieving concrete goals",
+                    "Mentor others in practical skills",
+                    "Network with professionals in your field",
+                    "Review and improve systems or processes",
+                    "Practice meditation focused on discipline and clarity",
+                    "Develop efficient schedules and time management",
+                    "Provide responsible and reliable leadership",
+                    "Build structured organizations and systems",
+                    "Take direct, practical approaches toward goals",
+                    "Respect traditional values and established methods"
+                ],
+                "ESFJ": [
+                    "Host a gathering for friends or family",
+                    "Volunteer for community service",
+                    "Plan activities that bring people together",
+                    "Create handmade gifts for loved ones",
+                    "Join clubs or groups with shared interests",
+                    "Check in with friends who might need support",
+                    "Organize a fundraiser for a cause you care about",
+                    "Create traditions or rituals for your close circle",
+                    "Engage in activities that help others directly",
+                    "Practice meditation focused on connection and harmony",
+                    "Create warm and supportive social environments",
+                    "Be responsive to others' needs and feelings",
+                    "Plan social events and gatherings",
+                    "Provide stable support for loved ones",
+                    "Value community and traditional values"
+                ],
+                "ISTP": [
+                    "Fix or modify something mechanical",
+                    "Learn a hands-on skill or craft",
+                    "Take apart and rebuild an object",
+                    "Go hiking, biking, or engage in solo sports",
+                    "Master a physical skill through practice",
+                    "Try problem-solving puzzles or games",
+                    "Explore the outdoors with practical gear",
+                    "Work on DIY projects requiring technical skills",
+                    "Experiment with tools or instruments",
+                    "Try meditation focused on physical sensations",
+                    "Explore independently and learn new skills",
+                    "Develop logical, efficient approaches to problem-solving",
+                    "Work with your hands and create tangible results",
+                    "Understand mechanical or structural principles",
+                    "Work independently and think freely"
+                ],
+                "ISFP": [
+                    "Create art with no pressure or expectations",
+                    "Take photos of beautiful scenes or moments",
+                    "Listen to or create music that moves you",
+                    "Explore nature and appreciate its beauty",
+                    "Try new sensory experiences (textures, tastes, etc.)",
+                    "Express yourself through fashion or decoration",
+                    "Work with your hands on crafts or projects",
+                    "Cook or bake with emphasis on presentation",
+                    "Dance or move your body freely to music",
+                    "Practice meditation focusing on sensory awareness",
+                    "Live according to personal values and authenticity",
+                    "Enjoy beauty and sensations of the present moment",
+                    "Express emotions through artistic self-expression",
+                    "Appreciate nature and simple pleasures",
+                    "Follow your inner compass rather than external pressures"
+                ],
+                "ESTP": [
+                    "Engage in an exciting physical activity or sport",
+                    "Try a new adventurous experience",
+                    "Participate in competitive games",
+                    "Learn a hands-on skill that produces immediate results",
+                    "Go on a spontaneous outing or road trip",
+                    "Fix or build something practical",
+                    "Join friends for energetic social activities",
+                    "Take calculated risks in a controlled environment",
+                    "Engage in playful physical activities",
+                    "Try active meditation like walking meditation",
+                    "Seek action and adventure",
+                    "Find creative solutions to immediate problems",
+                    "Seek opportunities that produce tangible results",
+                    "Enjoy competition and challenges",
+                    "Practice spontaneity and adaptability"
+                ],
+                "ESFP": [
+                    "Attend or host a social gathering or party",
+                    "Try a new dance class or movement activity",
+                    "Engage in performing arts or karaoke",
+                    "Go on a spontaneous adventure with friends",
+                    "Create a fun experience for others",
+                    "Try new restaurants or food experiences",
+                    "Participate in group games or activities",
+                    "Express yourself through fashion or appearance",
+                    "Share stories and experiences with others",
+                    "Practice playful, movement-based meditation",
+                    "Capture the joy and experience of the present moment",
+                    "Express enthusiasm and energy",
+                    "Enjoy social interactions and group activities",
+                    "Be aware of sensory experiences and material pleasures",
+                    "Embrace the joy and adventure of life"
+                ]
+            },
+            
+            // 시간 기반 추천 (Time-based recommendations)
+            time: {
+                "5min": [
+                    "Take 10 deep breaths, focusing on the exhale",
+                    "Stretch your arms, neck, and shoulders at your desk",
+                    "Make and enjoy a cup of tea mindfully",
+                    "Listen to one favorite song with full attention",
+                    "Write down three things you're grateful for",
+                    "Do a quick facial massage or acupressure",
+                    "Water your plants and check their health",
+                    "Step outside for fresh air and sunshine",
+                    "Practice box breathing (4 counts in, hold, out, hold)",
+                    "Do a quick body scan meditation",
+                    "Look out the window and observe the scenery for 5 minutes",
+                    "Listen to nature sounds with your eyes closed",
+                    "Drink a glass of water slowly, staying hydrated",
+                    "Stare at the ceiling for 5 minutes with no thoughts",
+                    "Observe one flower or plant in detail"
+                ],
+                "15min": [
+                    "Try a short guided meditation app",
+                    "Do a quick yoga sequence",
+                    "Journal your thoughts on a specific prompt",
+                    "Take a brief walk around the block",
+                    "Call a friend for a quick check-in",
+                    "Do a short, focused breathing exercise",
+                    "Listen to a relaxing playlist",
+                    "Tidy up one small area of your home",
+                    "Try a quick face mask or skin care routine",
+                    "Read a few pages of an enjoyable book",
+                    "Do 15 minutes of stretching or light exercise",
+                    "Spend 15 minutes consciously thinking of things you're grateful for",
+                    "Create a creative sketch or doodle",
+                    "Browse or plan new recipes",
+                    "Relax for 15 minutes with aromatherapy"
+                ],
+                "30min": [
+                    "Do a full yoga session or home workout",
+                    "Take a nature walk focusing on your surroundings",
+                    "Practice mindfulness meditation",
+                    "Read a book or magazine uninterrupted",
+                    "Take a power nap with an alarm set",
+                    "Write in a journal about your day or feelings",
+                    "Cook a simple, healthy meal mindfully",
+                    "Listen to a relaxing music playlist",
+                    "Take a warm bath with essential oils",
+                    "Work on a hobby project",
+                    "Spend 30 minutes creative writing or creating a story",
+                    "Start a cleaning project you've been putting off",
+                    "Learn a new skill through an online guide",
+                    "Focus on drawing or craft work",
+                    "Turn off all electronics for 30 minutes and completely rest"
+                ],
+                "1hour": [
+                    "Take a long nature hike",
+                    "Attend a yoga or fitness class",
+                    "Visit a museum, garden, or new location",
+                    "Have coffee with a friend",
+                    "Take an extended bath with self-care rituals",
+                    "Work on a creative project without rushing",
+                    "Cook a new recipe from scratch",
+                    "Practice a musical instrument",
+                    "Do deep cleaning or organizing of a space",
+                    "Engage in a hobby that requires focus and time",
+                    "Read an enjoyable novel for an hour",
+                    "Explore a completely new area or park",
+                    "Watch a favorite movie or documentary",
+                    "Spend a full hour on a complete body self-care ritual",
+                    "Enjoy board games or puzzles with friends"
+                ]
+            }
+        };
+
+        // 한국어 라이브러리 확장
+const koRelaxationLibrary = {
+    // 기분 기반 추천
+    mood: {
+        "Tired": [
+            "조용하고 어두운 방에서 20분간 파워 낮잠 취하기",
+            "목과 어깨에 집중하는 부드러운 스트레칭 운동 하기",
+            "허브차(카모마일 또는 페퍼민트)를 마시면서 부드러운 음악 듣기",
+            "라벤더 에센셜 오일로 따뜻한 샤워하기",
+            "릴랙스에 집중한 가벼운 요가 자세 취하기",
+            "수면 이야기나 가이드 명상 듣기",
+            "4-7-8 호흡법 연습하기(4초 들이마시고, 7초 유지, 8초 내쉬기)",
+            "차가운 물로 얼굴 마사지 시도하기",
+            "감귤류나 페퍼민트 같은 활력을 주는 에센셜 오일 사용하기",
+            "누워서 10분간 바디 스캔 명상 시도하기",
+            "진정 효과가 있는 발 마사지하기",
+            "자연 소리(비, 파도, 새소리)를 배경으로 짧은 휴식 취하기",
+            "조용한 공간에서 눈을 감고 깊은 호흡하기",
+            "따뜻한 우유나 황금 라떼(심황 음료) 마시기",
+            "촉촉한 안대를 착용하고 10분간 누워있기"
+        ],
+        "Stressed": [
+            "5분간 깊은 호흡 연습하기",
+            "주변 환경에 집중하며 짧은 야외 산책 하기",
+            "편안한 자연 소리 듣기",
+            "근육 이완 운동 시도하기(근육군 긴장과 이완)",
+            "생각과 걱정을 일기장에 적어보기",
+            "현재 감각에 집중하는 마음챙김 명상 연습하기",
+            "그림 그리기나 색칠하기 같은 창의적인 활동 하기",
+            "스트레스 볼이나 피젯 장난감 사용하기",
+            "라벤더나 샌달우드로 아로마테라피 시도하기",
+            "어깨와 목의 긴장을 풀어주는 부드러운 스트레칭 하기",
+            "불안을 줄이는 허브차(카모마일, 라벤더, 발레리안) 마시기",
+            "근육 긴장을 풀어주는 따뜻한 목욕이나 샤워하기",
+            "부드러운 음악이나 명상 앱으로 가이드 이미지화 명상 시도하기",
+            "페이스 요가나 얼굴 마사지로 얼굴 긴장 풀기",
+            "5분간 무념무상의 시간 갖기(아무것도 하지 않기)"
+        ],
+        "Sad": [
+            "재미있는 비디오나 코미디 쇼 보기",
+            "친구나 가족에게 전화하여 대화하기",
+            "반려동물과 시간 보내기",
+            "감사한 것 세 가지를 적어보기",
+            "행복한 추억의 사진 보기",
+            "기분 좋은 음악 듣기",
+            "좋아하는 창의적 취미 활동하기",
+            "자기 연민 명상 연습하기",
+            "에센셜 오일로 따뜻한 목욕하기",
+            "창가에 앉아 햇빛 쬐기",
+            "좋아하는 책에서 위로가 되는 구절 읽기",
+            "다른 사람에게 친절한 메시지나 손편지 쓰기",
+            "작은 선물이나 꽃으로 자신에게 선물하기",
+            "행복한 추억이 있는 장소 방문하기",
+            "감정을 표현하는 시나 글 쓰기"
+        ],
+        "Energetic": [
+            "달리기나 빠른 걸음으로 산책하기",
+            "좋아하는 신나는 음악에 맞춰 춤추기",
+            "집에서 할 수 있는 운동이나 피트니스 비디오 시도하기",
+            "정원 가꾸기나 가구 재배치하기",
+            "집 청소하고 정리하기",
+            "생각해왔던 창의적인 프로젝트 시작하기",
+            "혼자 또는 다른 사람과 함께 활동적인 게임하기",
+            "새로운 요리법 시도하기",
+            "악기 연주하기",
+            "고강도 인터벌 트레이닝(HIIT) 시도하기",
+            "자전거 타기나 스케이트 타기",
+            "하이킹이나 등산 코스 탐험하기",
+            "새로운 댄스 루틴이나 운동 배우기",
+            "스포츠 활동에 참여하기",
+            "미루고 있던 집안일 처리하기"
+        ],
+        "Anxious": [
+            "접지 운동 실천하기 (볼 수 있는 것 5가지, 만질 수 있는 것 4가지 등 말하기)",
+            "박스 호흡법 시도하기 (들이마시기, 유지, 내쉬기, 유지를 동일한 길이로)",
+            "불안한 생각을 적고 이에 도전하기",
+            "뜨개질이나 코바늘 같은, 반복적인 활동에 참여하기",
+            "불안 완화 가이드 명상 듣기",
+            "발걸음과 호흡에 집중하며 짧은 산책하기",
+            "스트레스 볼이나 얼음 큐브를 쥐고 짜기",
+            "점진적 근육 이완법 시도하기",
+            "상세하게 평온하고 안전한 장소를 상상하기",
+            "집중이 필요한 세부적인 청소 작업 수행하기",
+            "신체 감각에 의식적으로 집중하는 마음챙김 연습하기",
+            "걱정의 현실성을 평가하는 인지 재구성 시도하기",
+            "따뜻한 음료를 들고 감각에 집중하기",
+            "불안 경험을 표현하는 그림 그리기",
+            "진정 효과가 있는 요가 자세 시도하기(아기 자세, 벽에 다리 올리기 자세)"
+        ],
+        "Bored": [
+            "무료 온라인 강좌에서 새로운 것 배우기",
+            "평소 선택하지 않는 장르의 책 읽기",
+            "새로운 요리법이나 요리 기술 시도하기",
+            "DIY 프로젝트 시작하기",
+            "방 재배치하거나 재장식하기",
+            "발견할 새로운 음악의 플레이리스트 만들기",
+            "일기나 블로그 시작하기",
+            "지오캐싱이나 스캐벤저 헌트 앱 시도하기",
+            "오랫동안 대화하지 않은 친구에게 전화하기",
+            "미래 여행이나 활동 자세히 계획하기",
+            "버킷 리스트 만들거나 업데이트하기",
+            "새로운 언어로 몇 단어 배우기",
+            "가상 박물관 투어나 온라인 전시회 참여하기",
+            "퍼즐, 스도쿠, 크로스워드 시도하기",
+            "동네에서 새로운 지역 탐험하기"
+        ],
+        "Happy": [
+            "나중에 다시 볼 수 있도록 행복한 일을 적어두기",
+            "다른 사람과 기쁨 나누기",
+            "좋아하는 신나는 노래에 맞춰 춤추기",
+            "순간을 포착하기 위해 사진 찍기",
+            "일기 쓰기나 다른 사람에게 말하기를 통해 감사 표현하기",
+            "다른 사람을 위해 친절한 일 하기",
+            "주변 환경을 감상하며 자연에서 시간 보내기",
+            "기분에서 영감을 받은 예술적인 것 만들기",
+            "긍정적인 에너지가 있을 때 새로운 것 시도하기",
+            "행복을 충분히 경험하기 위해 마음챙김 연습하기",
+            "좋아하는 음식 요리하거나 맛있는 식사 즐기기",
+            "행복을 축하하는 작은 의식 만들기",
+            "기분이 좋아지게 하는 활동 목록 만들기",
+            "행복한 추억에 대한 편지 쓰기",
+            "긍정적인 감정을 활성화하기 위해 운동하기"
+        ],
+        "Angry": [
+            "긴장을 풀기 위해 신체 운동하기",
+            "더 긴 내쉬기로 깊은 호흡 연습하기",
+            "검열 없이 감정 적어보기",
+            "베개에 소리 지르거나 베개 치기",
+            "진정 효과가 있는 음악 듣기",
+            "상황에서 타임아웃 취하기",
+            "분노가 흘러가는 것을 상상하는 시각화 사용하기",
+            "찬물 샤워나 얼굴에 찬물 뿌리기",
+            "반응하기 전에 천천히 10까지 세기",
+            "긴장을 식별하기 위한 빠른 바디 스캔 명상 시도하기",
+            "감정을 탐구하고 표현하기 위해 그림 그리기",
+            "분노의 이유에 대한 일기 쓰기",
+            "진정 효과가 있는 에센셜 오일(라벤더, 베르가못) 사용하기",
+            "자신과 분노의 대상에 대한 연민 명상 연습하기",
+            "긴장을 풀기 위한 태핑 기법 시도하기"
+        ]
+    },
+    
+    // 날씨 기반 추천
+    weather: {
+        "Sunny": [
+            "햇볕의 따뜻함에 집중하며 자연 산책하기",
+            "공원이나 정원에서 야외 요가 연습하기",
+            "야외에서 점심 피크닉 즐기기",
+            "자연 채광에서 책 읽기",
+            "정원 가꾸기나 식물 관리하기",
+            "햇빛 속 자연의 사진 찍기",
+            "자전거 타기",
+            "햇빛 감각에 집중하는 야외 명상하기",
+            "햇살 가득한 숲에서 숲 목욕 시도하기",
+            "세탁물을 밖에 널고 신선한 공기 즐기기",
+            "지역 농산물 시장 방문하기",
+            "햇살 속에서 수채화 그리기",
+            "야외 카페나 커피숍에서 시간 보내기",
+            "물가(호수, 강, 바다) 근처에서 시간 보내기",
+            "일광욕하고 비타민 D 얻기"
+        ],
+        "Rainy": [
+            "비 내리는 소리를 들으며 뜨거운 차나 커피 마시기",
+            "빗방울 소리를 들으며 책이나 잡지 읽기",
+            "에센셜 오일로 따뜻한 목욕하기",
+            "실내 요가나 스트레칭 연습하기",
+            "편안한 음식 굽기",
+            "일기 쓰기나 창의적인 글쓰기 프로젝트 시작하기",
+            "아늑한 영화나 다큐멘터리 보기",
+            "담요 요새 만들고 안에서 휴식 취하기",
+            "퍼즐이나 보드 게임하기",
+            "비 소리에 집중하는 명상 연습하기",
+            "따뜻한 수프나 스튜 요리하기",
+            "오래된 사진 앨범이나 추억 상자 정리하기",
+            "비가 내리는 창문을 바라보며 그림 그리기나 스케치하기",
+            "실내 식물 손질하고 관리하기",
+            "비 오는 날에 어울리는 음악 플레이리스트 만들기"
+        ],
+        "Cloudy": [
+            "박물관이나 실내 정원 방문하기",
+            "집의 작은 공간 정리하기",
+            "새로운 요리법 시도하기",
+            "영화 마라톤 하기",
+            "읽으려고 했던 책 마저 읽기",
+            "부드러운 실내 운동 연습하기",
+            "오랜 친구에게 전화나 메시지 보내기",
+            "공예 프로젝트 작업하기",
+            "팟캐스트나 오디오북 듣기",
+            "새로운 곳으로 짧은 드라이브 가기",
+            "불필요한 물건 정리하며 미니멀리즘 연습하기",
+            "온라인 강좌나 튜토리얼을 통해 새로운 기술 배우기",
+            "촛불을 켜고 아늑한 분위기 만들기",
+            "조용한 카페에서 시간 보내기",
+            "실내 정원이나 테라리움 만들기"
+        ],
+        "Snowy": [
+            "뜨거운 음료를 만들고 눈이 내리는 것 관찰하기",
+            "따뜻한 담요 아래서 책 읽기",
+            "쿠키나 빵 굽기",
+            "눈 덮인 풍경의 사진 찍기",
+            "가능하다면 눈사람 만들거나 썰매 타기",
+            "실내 스트레칭이나 요가 연습하기",
+            "겨울에서 영감을 받은 시나 이야기 쓰기",
+            "에센셜 오일로 따뜻한 목욕하기",
+            "오래된 사진이나 기념품 정리하기",
+            "따뜻한 수프나 스튜 만들기",
+            "겨울 새를 위한 새 모이통 만들어 창문 밖에 설치하기",
+            "촛불로 아늑한 독서 공간 만들기",
+            "가족이나 친구와 보드 게임하기",
+            "핫 초콜릿이나 향신료 차 즐기기",
+            "창문에서 눈 덮인 풍경 그리기"
+        ],
+        "Hot": [
+            "시원한 샤워나 목욕하기",
+            "천천히 시원한 요가 자세 연습하기",
+            "집에서 만든 아이스 팝이나 스무디 만들기",
+            "선풍기나 에어컨 앞에서 독서하기",
+            "도서관이나 쇼핑몰 같은 냉방이 된 장소 방문하기",
+            "가능하다면 수영장에서 부드러운 물 운동하기",
+            "시원한 시각화에 집중하는 명상 연습하기",
+            "시원한 물과 에센셜 오일로 DIY 페이셜 미스트 만들기",
+            "목에 차가운 압박을 하며 편안한 음악 듣기",
+            "식물에 물을 뿌리고 그 주변의 시원한 공기 즐기기",
+            "시원한 수박이나 과일 샐러드 먹기",
+            "시원한 물에 발 담그기",
+            "가볍고 통기성 있는 옷으로 갈아입기",
+            "냉장고에 보관된 시원한 수건으로 얼굴과 목 닦기",
+            "이른 아침이나 늦은 저녁에 짧은 산책하기"
+        ],
+        "Cold": [
+            "따뜻한 음료와 함께 따뜻한 담요에 싸여 있기",
+            "에프솜 소금으로 뜨거운 목욕하기",
+            "집 안을 향기로 가득 채우는 따뜻한 것 굽기",
+            "열을 발생시키는 부드러운 실내 운동하기",
+            "따뜻한 자세에 집중하는 요가 연습하기",
+            "편안함을 위해 온수 병이나 온열 패드 사용하기",
+            "뜨거운 수프나 스튜 만들기",
+            "좋은 조명으로 따뜻한 담요 아래서 독서하기",
+            "내면의 따뜻함에 집중하는 명상 연습하기",
+            "따뜻한 양말을 신고 발 스트레칭하기",
+            "계피, 정향 또는 생강이 든 향기로운 차 마시기",
+            "촛불을 켜고 따뜻한 톤의 조명 사용하기",
+            "따뜻한 음식(오트밀, 죽, 스튜) 요리하기",
+            "체온을 나누기 위해 신체적 애정(포옹 등) 나누기",
+            "따뜻한 손 마사지나 발 마사지 시도하기"
+        ]
+    },
+    
+    // 건강 상태 기반 추천
+    health: {
+        "Healthy": [
+            "새로운 신체 활동이나 운동 시도하기",
+            "다이나믹 요가나 필라테스 연습하기",
+            "하이킹이나 수영하기",
+            "새로운 댄스 루틴 배우기",
+            "인터벌 트레이닝 시도하기",
+            "공원에서 체중 운동하기",
+            "레크리에이션 스포츠 팀이나 클럽 가입하기",
+            "달리기나 사이클링 시작하기",
+            "고급 명상 자세 연습하기",
+            "슬랙라인과 같은 균형 중심 운동 시도하기",
+            "새로운 건강한 요리법 탐험하기",
+            "긴 하이킹이나 트레킹으로 자신에게 도전하기",
+            "크로스핏이나 다른 고강도 운동 수업 참여하기",
+            "테니스, 배드민턴, 스쿼시와 같은 라켓 스포츠 시도하기",
+            "플랭크, 푸시업, 버피스로 자신에게 도전하기"
+        ],
+        "MildlyUnwell": [
+            "앉아서 부드러운 스트레칭 연습하기",
+            "가능하다면 천천히 짧게 산책하기",
+            "깊은 호흡 운동하기",
+            "가이드 이완 오디오 듣기",
+            "따뜻한 목욕이나 샤워하기",
+            "앉거나 누워서 명상 연습하기",
+            "유칼립투스나 페퍼민트로 아로마테라피 사용하기",
+            "편안한 쇼나 영화 보기",
+            "진정 효과가 있는 음악 듣기",
+            "부드러운 손과 발 마사지 시도하기",
+            "몸이 회복하도록 물 많이 마시기",
+            "따뜻한 레몬 물, 꿀, 생강차 마시기",
+            "회복에 도움이 되는 영양가 있는 수프 먹기",
+            "편안한 오디오북이나 팟캐스트 듣기",
+            "가벼운 자기 관리 활동(매니큐어, 보습 등) 하기"
+        ],
+        "ChronicPain": [
+            "부드러운 수중 운동 연습하기",
+            "아프지 않은 부위 이완에 집중하는 마음챙김 바디 스캔 시도하기",
+            "의사가 권장하는 대로 열 또는 냉 요법 사용하기",
+            "수정을 가한 매우 부드러운 요가 연습하기",
+            "가이드 통증 관리 명상 듣기",
+            "흥미로운 퍼즐 같은 주의 분산 기법 시도하기",
+            "휴식하는 동안 편안함을 위해 쿠션과 지지대 사용하기",
+            "특별히 통증 관리를 위한 호흡법 연습하기",
+            "의사가 승인한 경우 TENS 요법 시도하기",
+            "아픈 부위가 아닌 그 주변에 부드러운 자기 마사지 사용하기",
+            "통증 수준과 패턴을 추적하는 일기 쓰기",
+            "통증에 대한 생각을 바꾸기 위한 인지 행동 치료(CBT) 기법 시도하기",
+            "처방된 스트레칭이나 물리 치료 운동 꾸준히 하기",
+            "아사이 베리, 생강, 심황과 같은 항염증성 식품 먹기",
+            "근육을 진정시키기 위해 전기 담요나 온열 패드 사용하기"
+        ],
+        "LimitedMobility": [
+            "앉은 요가나 의자 운동 연습하기",
+            "앉아서 상체 스트레칭 시도하기",
+            "가슴 확장에 집중하는 호흡 운동하기",
+            "부드러운 근력 운동을 위해 저항 밴드 사용하기",
+            "시각화 명상 연습하기",
+            "앉은 자세의 태극권 동작 시도하기",
+            "스트레스 볼이나 손가락 운동 사용하기",
+            "움직일 수 있는 부분의 감각에 대한 마음챙김 연습하기",
+            "호흡에 집중하는 오디오 가이드 이완 시도하기",
+            "눈 운동과 얼굴 이완하기",
+            "현재 능력에 맞게 조정된 수중 운동하기",
+            "범위 내에서 침대나 앉은 자세로 스트레칭하기",
+            "이동성을 최대화하는 인체공학적 환경 만들기",
+            "손을 사용하는 공예나 예술 활동하기",
+            "긍정적인 자기 대화와 자기 수용 연습하기"
+        ]
+    },
+    
+    // 성격 기반 추천
+    personality: {
+        "Introverted": [
+            "조용한 구석에서 책 읽기",
+            "혼자 명상이나 요가 연습하기",
+            "혼자 자연 산책하기",
+            "일기 쓰기나 창의적 글쓰기",
+            "팟캐스트나 오디오북 듣기",
+            "혼자 공예나 취미 프로젝트 작업하기",
+            "개인적인 휴식 공간 만들기",
+            "정원 가꾸기나 식물 관리하기",
+            "책과 함께 긴 목욕하기",
+            "혼자를 위한 마음챙김 요리 연습하기",
+            "혼자 박물관이나 갤러리 방문하기",
+            "조용한 카페에서 혼자 시간 보내기",
+            "개인적인 성찰이나 생각 정리하기",
+            "혼자 즐길 수 있는 퍼즐이나 게임하기",
+            "자연 속에서 조용한 시간 보내기"
+        ],
+        "Extroverted": [
+            "대화를 위해 친구에게 전화하기",
+            "그룹 피트니스 수업 참여하기",
+            "작은 모임 조직하기",
+            "커뮤니티 이벤트에 자원봉사하기",
+            "다른 사람들과 함께 새로운 것을 배우는 수업 참여하기",
+            "워킹 그룹이나 클럽 가입하기",
+            "팀 스포츠 참여하기",
+            "워크샵이나 세미나 참석하기",
+            "독서 클럽이나 토론 그룹 가입하기",
+            "게임 밤이나 저녁 식사 파티 주최하기",
+            "커뮤니티 이벤트나 축제 참석하기",
+            "요리 수업 참여하거나 친구들과 요리하기",
+            "그룹 여행이나 당일 외출 계획하기",
+            "콘서트, 연극 또는 코미디 쇼 참석하기",
+            "스포츠 이벤트 관람하거나 응원하기"
+        ],
+     "Neutral": [
+            "사회적 시간과 혼자 시간의 균형을 맞추는 활동 시도하기",
+            "사교가 선택적인 드롭인 수업 참여하기",
+            "다른 사람 근처에서 독립적으로 작업할 수 있는 워크샵 참여하기",
+            "상호 작용 수준을 선택할 수 있는 커뮤니티 정원 가입하기",
+            "환경을 통제할 수 있는 커피숍 작업 세션 시도하기",
+            "사회적 압력이 제한된 그룹 명상 참여하기",
+            "자기 주도적 박물관 투어 하기",
+            "도서관 독서 그룹 가입하기",
+            "독립적인 작업 시간이 있는 취미 수업 시도하기",
+            "자신만의 경험을 즐길 수 있는 콘서트나 공연 참석하기",
+            "한두 명의 친구와 조용한 식사하기",
+            "소규모 그룹 하이킹이나 자연 산책 가기",
+            "다른 사람들과 상호 작용하면서 개별적으로 탐험할 수 있는 축제 방문하기",
+            "혼자 또는 친구와 함께 카페에서 읽기",
+            "관심사에 중점을 둔 온라인 커뮤니티 가입하기"
+        ]
+    },
+    
+    // MBTI 기반 추천
+    mbti: {
+        // 더 많은 MBTI 유형별 추천 추가...
+    },
+    
+    // 시간 기반 추천
+    time: {
+        "5min": [
+            "내쉬는 숨에 집중하며 10번 깊게 숨쉬기",
+            "책상에서 팔, 목, 어깨 스트레칭하기",
+            "마음챙김으로 차 한 잔 만들어 즐기기",
+            "온전한 집중으로 좋아하는 노래 한 곡 듣기",
+            "감사한 것 세 가지 적기",
+            "빠른 얼굴 마사지나 지압 하기",
+            "식물에 물 주고 건강 상태 확인하기",
+            "신선한 공기와 햇살을 위해 밖으로 나가기",
+            "박스 호흡법 연습하기(4초 들이마시고, 4초 유지, 4초 내쉬고, 4초 유지)",
+            "빠른 바디 스캔 명상 하기",
+            "창 밖을 보고 5분간 풍경 관찰하기",
+            "눈을 감고 자연 소리 듣기",
+            "물 한 잔을 천천히 마시며 수분 보충하기",
+            "아무 생각 없이 5분간 천장 바라보기",
+            "한 꽃이나 식물을 자세히 관찰하기"
+        ],
+        "15min": [
+            "짧은 가이드 명상 앱 시도하기",
+            "빠른 요가 시퀀스 하기",
+            "특정 주제에 대한 생각을 일기에 쓰기",
+            "블록 주변을 간단히 산책하기",
+            "빠른 확인을 위해 친구에게 전화하기",
+            "짧고 집중된 호흡 운동 하기",
+            "편안한 플레이리스트 듣기",
+            "집의 한 작은 구역 정리하기",
+            "빠른 얼굴 마스크나 스킨케어 루틴 시도하기",
+            "즐거운 책 몇 페이지 읽기",
+            "15분간 스트레칭이나 가벼운 운동하기",
+            "감사한 것들을 15분 동안 의식적으로 생각하기",
+            "창의적인 스케치나 낙서 만들기",
+            "새로운 요리법 찾아보거나 계획하기",
+            "아로마테라피로 15분간 휴식 취하기"
+        ],
+        "30min": [
+            "완전한 요가 세션이나 홈 운동하기",
+            "주변 환경에 집중하며 자연 산책하기",
+            "마음챙김 명상 연습하기",
+            "방해 없이 책이나 잡지 읽기",
+            "알람을 설정하고 파워 낮잠 취하기",
+            "하루나 감정에 대해 일기 쓰기",
+            "마음챙김으로 간단하고 건강한 식사 요리하기",
+            "편안한 음악 플레이리스트 듣기",
+            "에센셜 오일로 따뜻한 목욕하기",
+            "취미 프로젝트 작업하기",
+            "30분간 창의적인 글쓰기나 이야기 만들기",
+            "미루고 있던 청소 프로젝트 시작하기",
+            "온라인 가이드를 통해 새로운 기술 배우기",
+            "그림 그리기나 공예 작업에 집중하기",
+            "30분 동안 모든 전자기기를 끄고 완전히 휴식하기"
+        ],
+        "1hour": [
+            "긴 자연 하이킹 가기",
+            "요가나 피트니스 수업 참여하기",
+            "박물관, 정원 또는 새로운 장소 방문하기",
+            "친구와 커피 마시기",
+            "자기 관리 의식과 함께 긴 목욕하기",
+            "서두르지 않고 창의적인 프로젝트 작업하기",
+            "처음부터 새로운 요리법 요리하기",
+            "악기 연주 연습하기",
+            "공간의 깊은 청소나 정리하기",
+            "집중과 시간이 필요한 취미 즐기기",
+            "즐거운 소설 한 시간 동안 읽기",
+            "완전히 새로운 지역이나 공원 탐험하기",
+            "좋아하는 영화나 다큐멘터리 보기",
+            "완전한 신체 자기 관리 의식에 한 시간 투자하기",
+            "친구들과 보드 게임이나 퍼즐 즐기기"
+        ]
+    }
+};
+
+// 중국어 라이브러리
+const zhRelaxationLibrary = {
+    // 기분 기반 추천
+    mood: {
+        "Tired": [
+            "在安静黑暗的房间里小睡20分钟",
+            "练习集中于颈部和肩膀的轻柔伸展运动",
+            "喝一杯草药茶（洋甘菊或薄荷）并听轻柔的音乐",
+            "用薰衣草精油洗个热水澡",
+            "做一些轻柔的瑜伽姿势，专注于放松",
+            "听睡眠故事或引导冥想",
+            "练习4-7-8呼吸技巧（吸气4秒，保持7秒，呼气8秒）",
+            "用冷水尝试面部按摩",
+            "使用提神的精油如柑橘或薄荷",
+            "躺下来尝试10分钟的身体扫描冥想",
+            "给自己做一个舒缓的脚部按摩",
+            "在背景中播放自然声音（雨声，海浪，鸟鸣）短暂休息",
+            "在安静的空间，闭上眼睛，深呼吸",
+            "喝杯温牛奶或黄金拿铁（姜黄饮料）",
+            "戴着湿润的眼罩躺10分钟"
+        ],
+        "Stressed": [
+            "练习5分钟深呼吸",
+            "在室外散步，专注于周围环境",
+            "听平静的自然声音",
+            "尝试渐进肌肉放松（紧张和放松肌肉群）",
+            "将思想和担忧写在日记中",
+            "练习专注于当前感觉的正念冥想",
+            "参与绘画或涂色等创意活动",
+            "使用压力球或指尖玩具",
+            "尝试使用薰衣草或檀香进行芳香疗法",
+            "进行温和的肩膀和颈部拉伸，释放紧张感",
+            "喝能减轻焦虑的草药茶（洋甘菊，薰衣草，缬草）",
+            "洗个温水澡或淋浴，缓解肌肉紧张",
+            "用柔和的音乐或冥想应用程序尝试引导式想象冥想",
+            "通过面部瑜伽或面部按摩释放面部紧张",
+            "花5分钟什么都不做（无思虑时间）"
+        ],
+        "Sad": [
+            "观看有趣的视频或喜剧节目",
+            "给朋友或家人打电话聊天",
+            "与宠物共度时光",
+            "写下三件你感谢的事情",
+            "看快乐回忆的照片",
+            "听振奋人心的音乐",
+            "从事你喜欢的创意爱好",
+            "练习自我关怀冥想",
+            "用精油泡个温水澡",
+            "获取一些阳光，即使只是坐在窗边",
+            "阅读你最喜欢的书中令人安慰的段落",
+            "给他人写一条友善的信息或手写便条",
+            "用小礼物或鲜花犒赏自己",
+            "参观有着快乐回忆的地方",
+            "写一首诗或文字表达你的情感"
+        ],
+        "Energetic": [
+            "去跑步或快步走",
+            "随着你喜欢的节奏音乐跳舞",
+            "尝试家庭锻炼或健身视频",
+            "做一些园艺或重新布置家具",
+            "清洁并整理你家中的空间",
+            "开始一个你一直在考虑的创意项目",
+            "玩一个活跃的游戏（独自或与他人）",
+            "尝试烹饪新食谱",
+            "练习一种乐器",
+            "尝试高强度间歇训练（HIIT）",
+            "去骑自行车或滑冰",
+            "探索一条徒步或攀岩路线",
+            "学习新的舞蹈套路或运动",
+            "参加体育活动",
+            "处理你一直推迟的家务任务"
+        ],
+        "Anxious": [
+            "练习接地练习（说出你能看到的5件事物，能触摸的4件事物等）",
+            "尝试箱式呼吸（等长的吸气，屏气，呼气，屏气）",
+            "写下焦虑的想法并挑战它们",
+            "从事编织或钩针等重复性活动",
+            "听一个引导式缓解焦虑的冥想",
+            "专注于你的步伐和呼吸，进行短暂散步",
+            "握住并挤压压力球或冰块",
+            "尝试渐进式肌肉放松",
+            "详细想象一个平静、安全的地方",
+            "参与需要注意力的详细清洁任务",
+            "通过有意识地关注身体感觉练习正念",
+            "尝试认知重组以评估你的忧虑的现实性",
+            "拿着一杯温热的饮料，专注于感觉",
+            "画一幅表达你的焦虑体验的图画",
+            "尝试平静的瑜伽姿势（儿童式，靠墙腿上举式）"
+        ],
+        "Bored": [
+            "在免费在线课程上学习新知识",
+            "阅读一本你通常不会选择的类型的书",
+            "尝试一个新食谱或烹饪技巧",
+            "开始一个DIY项目",
+            "重新布置或装饰一个房间",
+            "制作一个新音乐播放列表去探索",
+            "开始一个日记或博客",
+            "尝试地理藏宝或寻宝应用",
+            "给你很久没联系的朋友打电话",
+            "详细规划未来的旅行或活动",
+            "创建或更新你的愿望清单",
+            "学习一种新语言的几个单词",
+            "参加虚拟博物馆参观或在线展览",
+            "尝试拼图，数独或填字游戏",
+            "探索你社区中的新区域"
+        ],
+        "Happy": [
+            "写下让你快乐的事情以备日后查看",
+            "与他人分享你的喜悦",
+            "随着你喜欢的欢快歌曲跳舞",
+            "拍照捕捉这一刻",
+            "通过写日记或告诉他人表达感恩",
+            "为他人做一些善举",
+            "在自然中花时间欣赏周围环境",
+            "创作受你的心情启发的艺术品",
+            "趁你有积极能量时尝试新事物",
+            "练习正念，充分体验你的快乐",
+            "烹饪你喜欢的食物或享用美餐",
+            "创建一个小仪式来庆祝你的快乐",
+            "列出让你感觉良好的活动清单",
+            "写一封关于你快乐记忆的信",
+            "做一些运动，激发你的积极情绪"
+        ],
+        "Angry": [
+            "进行身体锻炼释放紧张",
+            "练习深呼吸，呼气时间更长",
+            "不加审查地写下你的感受",
+            "对着枕头尖叫或捶打枕头",
+            "听平静的音乐",
+            "从情况中暂时退出",
+            "使用可视化想象你的愤怒流走",
+            "洗冷水澡或用冷水泼脸",
+            "回应前慢慢数到10",
+            "尝试快速身体扫描冥想识别紧张感",
+            "画一幅画来探索和表达情感",
+            "记录你愤怒的原因",
+            "使用舒缓的精油（薰衣草，佛手柑）",
+            "为自己和你愤怒的对象练习慈悲冥想",
+            "尝试拍打技术释放紧张"
+        ]
+    },
+    
+    // 날씨 기반 추천
+    weather: {
+        "Sunny": [
+            "散步，专注于阳光的温暖",
+            "在公园或花园里练习户外瑜伽",
+            "在户外享用午餐野餐",
+            "在自然光下阅读书籍",
+            "做一些园艺或植物护理",
+            "在阳光下拍摄自然照片",
+            "骑自行车出行",
+            "练习户外冥想，专注于阳光的感觉",
+            "在阳光明媚的林地尝试森林浴",
+            "在户外晾晒衣物，享受新鲜空气",
+            "参观当地农贸市场",
+            "在阳光下用水彩画画",
+            "在户外咖啡馆或咖啡店消磨时间",
+            "在水边（湖泊，河流，海洋）度过时光",
+            "晒太阳获取维生素D"
+        ],
+        "Rainy": [
+            "一边喝热茶或咖啡一边观赏雨景",
+            "听着雨滴声阅读书籍或杂志",
+            "用精油泡个温水澡",
+            "练习室内瑜伽或伸展运动",
+            "烤一些令人舒适的食物",
+            "写日记或开始创意写作项目",
+            "观看温馨的电影或纪录片",
+            "搭建毯子堡垒并在里面放松",
+            "做拼图或玩桌游",
+            "练习冥想，专注于雨声",
+            "煮一锅温暖的汤或炖菜",
+            "整理旧相册或记忆盒",
+            "在俯瞰雨景的窗边绘画或素描",
+            "修剪和照料室内植物",
+            "创建一个适合雨天的音乐播放列表"
+        ],
+        "Cloudy": [
+            "参观博物馆或室内花园",
+            "整理家中的小空间",
+            "尝试新食谱",
+            "进行电影马拉松",
+            "阅读你一直想完成的书",
+            "练习温和的室内锻炼",
+            "给老朋友打电话或发信息",
+            "进行一个手工项目",
+            "听播客或有声读物",
+            "短途驾车去一个新地方",
+            "通过整理不必要的物品练习极简主义",
+            "通过在线课程或教程学习新技能",
+            "点蜡烛创造舒适的氛围",
+            "在安静的咖啡馆消磨时间",
+            "创建室内花园或玻璃容器花园"
+        ],
+        "Snowy": [
+            "准备热饮料，观看雪花飘落",
+            "在温暖的毯子下阅读书籍",
+            "烤饼干或面包",
+            "拍摄雪景照片",
+            "如果可能，堆雪人或去雪橇",
+            "练习室内伸展或瑜伽",
+            "写冬季灵感的诗歌或故事",
+            "用精油泡个温水澡",
+            "整理旧照片或纪念品",
+            "煮一锅温暖的汤或炖菜",
+            "为冬季鸟类制作喂食器并放在窗外",
+            "用蜡烛创建舒适的阅读角落",
+            "与家人或朋友玩桌游",
+            "享用热巧克力或香料茶",
+            "从窗口绘制雪景"
+        ],
+        "Hot": [
+            "洗个凉爽的淋浴或泡澡",
+            "练习缓慢的、清凉的瑜伽姿势",
+            "制作自制冰棍或冰沙",
+            "在风扇或空调前阅读",
+            "参观有空调的场所如图书馆或商场",
+            "如果可能，在泳池做温和的水中运动",
+            "练习冥想，专注于清凉的想象",
+            "用凉水和精油制作DIY面部喷雾",
+            "在颈部敷凉敷的同时听轻松音乐",
+            "给植物喷雾，享受周围的凉爽空气",
+            "享用清凉的西瓜或水果沙拉",
+            "把脚浸在凉水中",
+            "换上轻便、透气的衣物",
+            "用保存在冰箱中的凉毛巾擦脸和颈部",
+            "在清晨或傍晚进行短暂散步"
+        ],
+        "Cold": [
+            "裹在温暖的毯子里，喝热饮",
+            "用泻盐泡个热水澡",
+            "烤些温暖的食物，让家里充满香气",
+            "做温和的室内运动产生热量",
+            "练习专注于温暖姿势的瑜伽",
+            "使用热水袋或加热垫增加舒适感",
+            "煮热汤或炖菜",
+            "在温暖的毯子下用良好照明阅读",
+            "练习冥想，专注于内在温暖",
+            "穿暖袜做脚部伸展",
+            "喝用肉桂、丁香或姜调制的香茶",
+            "点蜡烛，使用暖色调照明",
+            "烹饪温暖食物（燕麦片、粥、炖菜）",
+            "分享身体接触（拥抱等）以共享体温",
+            "尝试温暖的手部按摩或脚部按摩"
+        ]
+    },
+    
+    // 건강 상태 기반 추천
+    health: {
+        "Healthy": [
+            "尝试新的体育活动或锻炼",
+            "练习动态瑜伽或普拉提",
+            "去徒步旅行或游泳",
+            "学习新的舞蹈套路",
+            "尝试间歇训练",
+            "在公园进行自重锻炼",
+            "加入休闲体育队或俱乐部",
+            "开始跑步或骑自行车",
+            "练习高级冥想姿势",
+            "尝试平衡为主的运动如软绳走",
+            "探索新的健康食谱",
+            "挑战自己进行长途徒步或远足",
+            "参加CrossFit或其他高强度训练课程",
+            "尝试网球、羽毛球或壁球等拍类运动",
+            "挑战自己做平板支撑、俯卧撑或波比跳"
+        ],
+        "MildlyUnwell": [
+            "坐着练习温和的伸展",
+            "如果能，进行缓慢短距离散步",
+            "做深呼吸练习",
+            "听引导放松音频",
+            "洗个热水澡或淋浴",
+            "坐着或躺着练习冥想",
+            "使用桉树或薄荷精油进行芳香疗法",
+            "观看舒适的节目或电影",
+            "听舒缓音乐",
+            "尝试温和的手和脚按摩",
+            "多喝水帮助身体恢复",
+            "喝温柠檬水、蜂蜜和姜茶",
+            "吃有助恢复的营养汤",
+            "听舒适的有声书或播客",
+            "做轻度自我护理活动（修指甲，保湿等）"
+        ],
+        "ChronicPain": [
+            "练习温和的水中运动",
+            "尝试专注于放松非疼痛区域的正念身体扫描",
+            "根据医生建议使用热疗或冷疗",
+            "使用修改后练习非常温和的瑜伽",
+            "听引导式疼痛管理冥想",
+            "尝试分散注意力技巧如有趣的难题",
+            "休息时使用靠垫和支撑物增加舒适度",
+            "专门针对疼痛管理练习呼吸技巧",
+            "如果医生批准，尝试TENS治疗",
+            "在疼痛区域周围（不是上面）进行温和自我按摩",
+            "保持日记追踪疼痛程度和模式",
+            "尝试认知行为疗法（CBT）技巧改变你对疼痛的看法",
+            "持续做处方伸展或物理治疗练习",
+            "食用抗炎食物如巴西莓、姜和姜黄",
+            "使用电热毯或加热垫舒缓肌肉"
+        ],
+        "LimitedMobility": [
+            "练习坐姿瑜伽或椅子运动",
+            "坐着尝试上身伸展",
+            "做专注于胸部扩展的呼吸练习",
+            "使用阻力带进行温和的力量锻炼",
+            "练习可视化冥想",
+            "尝试坐姿太极动作",
+            "使用压力球或手指练习",
+            "练习移动部分感觉的正念",
+            "尝试专注于呼吸的音频引导放松",
+            "做眼部运动和面部放松",
+            "进行适合你当前能力的水中运动",
+            "在你的活动范围内床上或坐着伸展",
+            "创建一个最大化移动性的人体工程学环境",
+            "用手做手工艺或艺术活动",
+            "练习积极自我对话和自我接纳"
+        ]
+    },
+    
+    // 성격 기반 추천
+    personality: {
+        "Introverted": [
+            "在安静的角落阅读书籍",
+            "独自练习冥想或瑜伽",
+            "独自进行自然散步",
+            "写日记或创意写作",
+            "听播客或有声读物",
+            "独自从事手工艺或爱好项目",
+            "创建个人放松空间",
+            "尝试园艺或植物护理",
+            "带着书泡个长时间的澡",
+            "为自己练习正念烹饪",
+            "独自参观博物馆或画廊",
+            "在安静的咖啡馆独处",
+            "进行个人反思或思想整理",
+            "玩可以独自享受的拼图或游戏",
+            "在自然中享受安静时光"
+        ],
+        "Extroverted": [
+            "给朋友打电话聊天",
+            "参加团体健身课",
+            "组织小型聚会",
+            "为社区活动志愿服务",
+            "参加与他人一起学习新事物的课程",
+            "加入步行小组或俱乐部",
+            "参与团队运动",
+            "参加工作坊或研讨会",
+            "加入读书俱乐部或讨论小组",
+            "主持游戏之夜或晚餐派对",
+            "参加社区活动或节日",
+            "参加烹饪课或与朋友一起烹饪",
+            "规划团体旅行或一日游",
+            "参加音乐会、戏剧或喜剧表演",
+            "观看或为体育赛事加油"
+        ],
+        "Neutral": [
+            "尝试平衡社交和独处时间的活动",
+            "参加社交是可选的课程",
+            "参加可以在他人附近独立工作的工作坊",
+            "加入社区花园，可以选择互动水平",
+            "尝试可以控制环境的咖啡店工作环节",
+            "参加社交压力有限的团体冥想",
+            "进行自导博物馆参观",
+            "加入图书馆阅读小组",
+            "尝试有独立工作时间的爱好课程",
+            "参加可以享受个人体验的音乐会或表演",
+            "与一两个朋友共进安静的餐点",
+            "参加小组远足或自然散步",
+            "访问节日，可以与他人互动的同时单独探索",
+            "在咖啡馆独自阅读或与朋友共处",
+            "加入专注于你兴趣的在线社区"
+        ]
+    },
+    
+    // 시간 기반 추천
+    time: {
+        "5min": [
+            "深呼吸10次，专注于呼气",
+            "在桌前伸展手臂、颈部和肩膀",
+            "专注地泡一杯茶并享用",
+            "全神贯注地听一首喜欢的歌曲",
+            "写下三件你感恩的事情",
+            "做一个快速面部按摩或指压",
+            "给植物浇水并检查它们的健康状况",
+            "到户外呼吸新鲜空气和阳光",
+            "练习箱式呼吸（4秒吸气，保持，呼气，保持）",
+            "做一个简短的身体扫描冥想",
+            "看窗外观察五分钟景色",
+            "闭上眼睛听大自然的声音",
+            "慢慢地喝一杯水保持水分",
+            "无思考地凝视天花板五分钟",
+            "仔细观察一朵花或一株植物"
+        ],
+        "15min": [
+            "尝试一个简短的引导冥想应用",
+            "做一个快速的瑜伽序列",
+            "对特定提示记录你的想法",
+            "在街区周围短暂散步",
+            "给朋友打个电话简短问候",
+            "进行一次简短的专注呼吸练习",
+            "听一个放松的播放列表",
+            "整理家里的一个小区域",
+            "尝试一个快速面膜或护肤程序",
+            "阅读一本愉快的书几页",
+            "做15分钟的伸展或轻度运动",
+            "花15分钟有意识地思考感恩的事物",
+            "创作一个创意素描或涂鸦",
+            "浏览或计划新食谱",
+            "用芳香疗法放松15分钟"
+        ],
+        "30min": [
+            "进行一次完整的瑜伽课程或家庭锻炼",
+            "专注于周围环境进行自然散步",
+            "练习正念冥想",
+            "不间断地阅读书籍或杂志",
+            "设置闹钟小睡一下",
+            "写日记记录你的一天或感受",
+            "用心制作一顿简单、健康的饭菜",
+            "听一个放松的音乐播放列表",
+            "用精油泡一个温水澡",
+            "进行一个爱好项目",
+            "花30分钟进行创意写作或创作故事",
+            "开始一个你一直推迟的清洁项目",
+            "通过在线指南学习新技能",
+            "专注于绘画或手工艺品",
+            "关闭所有电子设备30分钟，完全休息"
+        ],
+        "1hour": [
+            "进行一次长时间的自然徒步",
+            "参加瑜伽或健身课程",
+            "参观博物馆、花园或新地点",
+            "与朋友共进咖啡",
+            "进行自我护理仪式的长时间沐浴",
+            "不急不忙地进行创意项目",
+            "从头开始尝试新食谱",
+            "练习演奏乐器",
+            "深度清洁或整理空间",
+            "从事需要专注和时间的爱好",
+            "享受一小时阅读愉快的小说",
+            "探索全新的区域或公园",
+            "观看喜爱的电影或纪录片",
+            "花一整小时进行完整的身体自我护理仪式",
+            "与朋友一起享受桌游或拼图"
+        ]
+    }
+};
+
+// 일본어 라이브러리
+const jaRelaxationLibrary = {
+    // 기분 기반 추천
+    mood: {
+        "Tired": [
+            "静かで暗い部屋で20分間のパワーナップをとる",
+            "首と肩に焦点を当てたやさしいストレッチを行う",
+            "ハーブティー（カモミールやペパーミント）を飲みながら穏やかな音楽を聴く",
+            "ラベンダーエッセンシャルオイルを使って温かいシャワーを浴びる",
+            "リラクゼーションに焦点を当てた軽いヨガのポーズを行う",
+            "スリープストーリーやガイド付き瞑想を聴く",
+            "4-7-8呼吸法を実践する（4秒吸い込み、7秒保持、8秒吐き出す）",
+            "冷水でフェイスマッサージを試す",
+            "柑橘系やペパーミントなどの元気が出るエッセンシャルオイルを拡散する",
+            "横になって10分間のボディスキャン瞑想を試す",
+            "落ち着く効果のあるフットマッサージをする",
+            "自然の音（雨、波、鳥のさえずり）をバックグラウンドに短い休息をとる",
+            "静かな空間で目を閉じて深呼吸をする",
+            "温かいミルクやゴールデンラテ（ターメリックドリンク）を飲む",
+            "しっとりしたアイマスクを着用して10分間横になる"
+        ],
+        "Stressed": [
+            "5分間の深呼吸を行う",
+            "周囲に注意を向けながら短い屋外散歩をする",
+            "穏やかな自然音を聴く",
+            "段階的筋弛緩法を試す（筋肉グループの緊張と解放）",
+            "思いや心配事を日記に書き出す",
+            "現在の感覚に集中するマインドフルネス瞑想を行う",
+            "描画や塗り絵など創造的な活動に取り組む",
+            "ストレスボールやフィジェットトイを使う",
+            "ラベンダーやサンダルウッドでアロマテラピーを試す",
+            "肩と首の緊張をほぐすためのやさしいストレッチを行う",
+            "不安を軽減するハーブティー（カモミール、ラベンダー、バレリアン）を飲む",
+            "筋肉の緊張をほぐす温かい入浴やシャワーをする",
+            "柔らかい音楽や瞑想アプリでガイド付きイメージ瞑想を試す",
+            "顔のヨガや顔のマッサージで顔の緊張を緩める",
+            "5分間何も考えない時間をとる（考えのない時間）"
+        ],
+        "Sad": [
+            "面白い動画やコメディショーを見る",
+            "友人や家族に電話をして話す",
+            "ペットと時間を過ごす",
+            "感謝していることを三つ書き出す",
+            "幸せな思い出の写真を見る",
+            "元気の出る音楽を聴く",
+            "楽しい創造的な趣味に取り組む",
+            "自己慈悲の瞑想を実践する",
+            "エッセンシャルオイルで温かい入浴をする",
+            "窓際に座って日光を浴びる",
+            "お気に入りの本から慰めになる文章を読む",
+            "誰かに優しいメッセージや手書きのメモを書く",
+            "小さなギフトや花で自分にご褒美をあげる",
+            "幸せな思い出のある場所を訪れる",
+            "感情を表現する詩や文章を書く"
+        ],
+        "Energetic": [
+            "ランニングや早歩きの散歩に行く",
+            "お気に入りのアップビートな音楽に合わせて踊る",
+            "自宅でのワークアウトやフィットネスビデオを試す",
+            "ガーデニングや家具の配置替えをする",
+            "家の掃除や整理をする",
+            "考えていた創造的なプロジェクトを始める",
+            "アクティブなゲーム（一人または他の人と）をプレイする",
+            "新しいレシピを試す",
+            "楽器を練習する",
+            "高強度インターバルトレーニング（HIIT）を試す",
+            "自転車やスケートに行く",
+            "ハイキングやクライミングルートを探索する",
+            "新しいダンスルーティンやエクササイズを学ぶ",
+            "スポーツ活動に参加する",
+            "先延ばしにしていた家事をこなす"
+        ],
+        "Anxious": [
+            "グラウンディング練習を行う（見えるもの5つ、触れるもの4つなどを挙げる）",
+            "ボックスブリージング（吸う、保持、吐く、保持を均等にカウント）を試す",
+            "不安な考えを書き出してそれに挑戦する",
+            "編み物や編み物などの繰り返し活動に取り組む",
+            "ガイド付き不安緩和瞑想を聴く",
+            "歩みと呼吸に集中して短い散歩をする",
+            "ストレスボールや氷を握りしめる",
+            "段階的筋弛緩法を試す",
+            "詳細に穏やかで安全な場所を想像する",
+            "集中力を要する詳細な掃除タスクに取り組む",
+            "体の感覚に意識的に集中するマインドフルネスを実践する",
+            "心配の現実性を評価する認知再構成法を試す",
+            "温かい飲み物を持ち、その感覚に集中する",
+            "不安体験を表現する絵を描く",
+            "落ち着くヨガのポーズ（チャイルドポーズ、壁に足をあげるポーズ）を試す"
+        ],
+        "Bored": [
+            "無料のオンラインコースで新しいことを学ぶ",
+            "普段選ばないジャンルの本を読む",
+            "新しいレシピや料理テクニックを試す",
+            "DIYプロジェクトを始める",
+            "部屋の模様替えやリデコレーションをする",
+            "発見する新しい音楽のプレイリストを作る",
+            "日記やブログを始める",
+            "ジオキャッシングやスカベンジャーハントアプリを試す",
+            "しばらく話していない友人に電話する",
+            "将来の旅行や活動を詳細に計画する",
+            "バケットリストを作成または更新する",
+            "新しい言語で数語を学ぶ",
+            "バーチャル美術館ツアーやオンライン展示を試す",
+            "パズル、数独、クロスワードを試す",
+            "近所の新しいエリアを探索する"
+        ],
+        "Happy": [
+            "後で振り返るために幸せなことを書き留める",
+            "誰かと喜びを分かち合う",
+            "お気に入りのアップビートな曲に合わせて踊る",
+            "その瞬間を捉えるために写真を撮る",
+            "ジャーナリングや他者へ伝えることで感謝を表現する",
+            "誰かのために親切な行動をする",
+            "自然の中で周囲を味わう時間を過ごす",
+            "気分からインスピレーションを受けた芸術作品を創作する",
+            "ポジティブなエネルギーがあるうちに新しいことを試す",
+            "幸せを十分に経験するためにマインドフルネスを実践する",
+            "お気に入りの食べ物を料理したり美味しい食事を楽しむ",
+            "幸せを祝う小さな儀式を作る",
+            "気分が良くなる活動のリストを作る",
+            "幸せな思い出について手紙を書く",
+            "ポジティブな感情を活性化するためにエクササイズする"
+        ],
+        "Angry": [
+            "緊張を解放するために身体的な運動をする",
+            "長い呼気で深呼吸を実践する",
+            "検閲せずに感情を書き出す",
+            "枕に向かって叫んだり枕を殴る",
+            "落ち着く音楽を聴く",
+            "状況からタイムアウトする",
+            "怒りが流れ去るイメージを視覚化する",
+            "冷水シャワーを浴びるか顔に冷水をはねる",
+            "反応する前にゆっくりと10まで数える",
+            "緊張を特定するための簡単なボディスキャン瞑想を試す",
+            "感情を探索し表現するための絵を描く",
+            "怒りの理由について日記を書く",
+            "落ち着くエッセンシャルオイル（ラベンダー、ベルガモット）を使用する",
+            "自分と怒りの対象のための慈悲瞑想を実践する",
+            "緊張を解放するためのタッピング技術を試す"
+        ]
+    },
+    
+    // 날씨 기반 추천
+    weather: {
+        "Sunny": [
+            "太陽の暖かさに焦点を当てて自然散歩をする",
+            "公園や庭で屋外ヨガを実践する",
+            "屋外でランチピクニックを楽しむ",
+            "自然光の中で本を読む",
+            "ガーデニングや植物のお手入れをする",
+            "日光の中で自然の写真を撮る",
+            "自転車に乗る",
+            "太陽の感覚に焦点を当てた屋外瞑想を実践する",
+            "日当たりの良い森で森林浴を試す",
+            "洗濯物を外に干して新鮮な空気を楽しむ",
+            "地元のファーマーズマーケットを訪れる",
+            "日光の中で水彩画を描く",
+            "屋外カフェやコーヒーショップで時間を過ごす",
+            "水辺（湖、川、海）で時間を過ごす",
+            "日光浴をしてビタミンDを摂取する"
+        ],
+        "Rainy": [
+            "熱いお茶やコーヒーを飲みながら雨を見る",
+            "雨だれの音を聴きながら本や雑誌を読む",
+            "エッセンシャルオイルで温かい入浴をする",
+            "室内ヨガやストレッチを実践する",
+            "何か心地よいものを焼く",
+            "日記を書いたり創作プロジェクトを始める",
+            "居心地の良い映画やドキュメンタリーを見る",
+            "ブランケットフォートを作って中でリラックスする",
+            "ジグソーパズルやボードゲームをする",
+            "雨の音に集中する瞑想を実践する",
+            "温かいスープやシチューを作る",
+            "古い写真アルバムや思い出の箱を整理する",
+            "雨を見下ろす窓際で絵を描いたりスケッチする",
+            "室内植物の剪定とお手入れをする",
+            "雨の日にぴったりな音楽プレイリストを作成する"
+        ],
+        "Cloudy": [
+            "博物館や室内庭園を訪れる",
+            "家の小さなスペースを整理する",
+            "新しいレシピを試す",
+            "映画マラソンをする",
+            "読みたかった本を読み終える",
+            "穏やかな室内エクササイズを実践する",
+            "古い友人に電話やメッセージを送る",
+            "クラフトプロジェクトに取り組む",
+            "ポッドキャストやオーディオブックを聴く",
+            "新しい場所への短いドライブに行く",
+            "不必要なアイテムを整理してミニマリズムを実践する",
+            "オンラインコースやチュートリアルで新しいスキルを学ぶ",
+            "キャンドルを灯して居心地の良い雰囲気を作る",
+            "静かなカフェで時間を過ごす",
+            "室内庭園やテラリウムを作成する"
+        ],
+        "Snowy": [
+            "熱い飲み物を作って雪が降るのを見る",
+            "暖かい毛布の下で本を読む",
+            "クッキーやパンを焼く",
+            "雪景色の写真を撮る",
+            "可能であれば雪だるまを作ったりそり滑りをする",
+            "室内ストレッチやヨガを実践する",
+            "冬にインスパイアされた詩や物語を書く",
+            "エッセンシャルオイルで温かい入浴をする",
+            "古い写真や記念品を整理する",
+            "温かいスープやシチューを作る",
+            "冬の鳥のための餌箱を作って窓の外に置く",
+            "キャンドルで居心地の良い読書スペースを作る",
+            "家族や友人とボードゲームをする",
+            "ホットチョコレートやスパイスティーを楽しむ",
+            "窓から雪景色を描く"
+        ],
+        "Hot": [
+            "涼しいシャワーや入浴をする",
+            "ゆっくりとした冷却ヨガのポーズを実践する",
+            "自家製アイスポップやスムージーを作る",
+            "扇風機やエアコンの前で読書する",
+            "図書館やショッピングモールなどのエアコンのある場所を訪れる",
+            "可能であれば穏やかな水中エクササイズをプールで行う",
+            "冷却のビジュアライゼーションに焦点を当てた瞑想を実践する",
+            "冷水とエッセンシャルオイルでDIYフェイシャルミストを作る",
+            "首に冷たいコンプレスをしながらリラックスした音楽を聴く",
+            "植物にミストをかけ、周囲の涼しい空気を楽しむ",
+            "冷たいスイカやフルーツサラダを食べる",
+            "足を冷たい水に浸す",
+            "軽くて通気性のある服装に着替える",
+            "冷蔵庫に保管した冷たいタオルで顔と首を拭く",
+            "早朝や夕方に短い散歩をする"
+        ],
+        "Cold": [
+            "温かい飲み物と共に暖かい毛布に包まる",
+            "エプソムソルトで熱い入浴をする",
+            "家中に香りが広がる温かいものを焼く",
+            "熱を生み出すために穏やかな室内エクササイズをする",
+            "温めのポーズに焦点を当てたヨガを実践する",
+            "快適さのために湯たんぽや温熱パッドを使用する",
+            "熱いスープやシチューを作る",
+            "良い照明のある暖かい毛布の下で読書する",
+            "内側の暖かさに焦点を当てた瞑想を実践する",
+            "暖かい靴下を履いて足のストレッチをする",
+            "シナモン、クローブ、または生姜と共に香りのあるお茶を飲む",
+            "キャンドルを灯し暖色の照明を使う",
+            "温かい食べ物（オートミール、お粥、シチュー）を料理する",
+            "体温を共有するためのスキンシップ（ハグなど）をする",
+            "温かい手のマッサージや足のマッサージを試す"
+        ]
+    },
+    
+    // 건강 상태 기반 추천
+    health: {
+        "Healthy": [
+            "新しい身体活動やワークアウトを試す",
+            "ダイナミックヨガやピラティスを実践する",
+            "ハイキングや水泳に行く",
+            "新しいダンスルーティンを学ぶ",
+            "インターバルトレーニングを試す",
+            "公園で自重トレーニングをする",
+            "レクリエーションスポーツチームやクラブに参加する",
+            "ランニングやサイクリングを始める",
+            "上級瞑想ポーズを実践する",
+            "スラックラインのようなバランス重視のエクササイズを試す",
+            "新しい健康的なレシピを探る",
+            "長いハイキングやトレッキングで自分自身に挑戦する",
+            "クロスフィットや他の高強度ワークアウトクラスに参加する",
+            "テニス、バドミントン、スカッシュなどのラケットスポーツを試す",
+            "プランク、腕立て伏せ、バーピージャンプで自分に挑戦する"
+        ],
+        "MildlyUnwell": [
+            "座りながら優しいストレッチを実践する",
+            "可能なら短く、ゆっくりとした散歩をする",
+            "深呼吸エクササイズをする",
+            "ガイド付きリラクゼーションオーディオを聴く",
+            "温かい入浴やシャワーをする",
+            "座ったり横になったりしながら瞑想を実践する",
+            "ユーカリやペパーミントを使ったアロマテラピーを使用する",
+            "心地よい番組や映画を見る",
+            "落ち着く音楽を聴く",
+            "穏やかな手足のマッサージを試す",
+            "体の回復を助けるために水をたくさん飲む",
+            "温かいレモン水、蜂蜜、生姜茶を飲む",
+            "回復に役立つ栄養スープを食べる",
+            "心地よいオーディオブックやポッドキャストを聴く",
+            "軽い自己ケア活動（マニキュア、保湿など）を行う"
+        ],
+        "ChronicPain": [
+            "穏やかな水中エクササイズを実践する",
+            "痛みのない部分をリラックスさせることに焦点を当てたマインドフルなボディスキャンを試す",
+            "医師の推奨に従って温熱療法または冷却療法を使用する",
+            "非常に穏やかな修正を加えたヨガを実践する",
+            "ガイド付き疼痛管理瞑想を聴く",
+            "魅力的なパズルなどの気晴らし技術を試す",
+            "くつろぐためにクッションやサポートを使用する",
+            "特に疼痛管理のためのブレスワークを実践する",
+            "医師が承認した場合はTENS療法を試す",
+            "痛みのある部分の周り（上ではなく）に優しい自己マッサージを使用する",
+            "疼痛レベルとパターンを追跡する日記をつける",
+            "痛みについての考え方を変えるための認知行動療法（CBT）技術を試す",
+            "処方されたストレッチや理学療法の運動を一貫して行う",
+            "アサイーベリー、生姜、ターメリックなどの抗炎症食品を食べる",
+            "筋肉を和らげるために電気毛布や温熱パッドを使用する"
+        ],
+        "LimitedMobility": [
+            "座位ヨガや椅子エクササイズを実践する",
+            "座りながら上半身のストレッチを試す",
+            "胸の拡張に焦点を当てた呼吸エクササイズをする",
+            "穏やかな筋力トレーニングのための抵抗バンドを使用する",
+            "ビジュアライゼーション瞑想を実践する",
+            "座位の太極拳の動きを試す",
+            "ストレスボールや指のエクササイズを使用する",
+            "動く部分の感覚に対するマインドフルネスを実践する",
+            "呼吸に焦点を当てたオーディオガイド付きリラクゼーションを試す",
+            "目のエクササイズと顔のリラクゼーションをする",
+            "現在の能力に合わせた水中エクササイズをする",
+            "ベッドや座った状態で可動域内でストレッチをする",
+            "可動性を最大化する人間工学的な環境を作る",
+            "手を使ったクラフトやアート活動を行う",
+            "ポジティブな自己対話と自己受容を実践する"
+        ]
+    },
+    
+    // 성격 기반 추천
+        personality: {
+        "Introverted": [
+            "静かな場所で本を読む",
+            "一人で瞑想やヨガを実践する",
+            "一人で自然散歩をする",
+            "日記をつけたり創作的な文章を書く",
+            "ポッドキャストやオーディオブックを聴く",
+            "一人でクラフトや趣味のプロジェクトに取り組む",
+            "個人的なリラクゼーションスペースを作る",
+            "ガーデニングや植物のお世話をする",
+            "本と一緒に長めの入浴を楽しむ",
+            "一人のためのマインドフル料理を実践する",
+            "一人で美術館やギャラリーを訪れる",
+            "静かなカフェで一人の時間を過ごす",
+            "個人的な振り返りや思考の整理をする",
+            "一人で楽しめるパズルやゲームをする",
+            "自然の中で静かな時間を過ごす"
+        ],
+        "Extroverted": [
+            "友達に近況確認の電話をする",
+            "グループフィットネスクラスに参加する",
+            "小さな集まりを企画する",
+            "コミュニティイベントでボランティアをする",
+            "他の人と一緒に新しいことを学ぶクラスに参加する",
+            "ウォーキンググループやクラブに参加する",
+            "チームスポーツに参加する",
+            "ワークショップやセミナーに参加する",
+            "読書クラブやディスカッショングループに参加する",
+            "ゲームナイトやディナーパーティーを主催する",
+            "コミュニティイベントや祭りに参加する",
+            "料理教室に参加したり友達と料理をする",
+            "グループ旅行やお出かけを計画する",
+            "コンサート、演劇、コメディショーに参加する",
+            "スポーツイベントを観戦または応援する"
+        ],
+        "Neutral": [
+            "社交的な時間と一人の時間のバランスをとる活動をする",
+            "交流が選択的なドロップインクラスに参加する",
+            "他の人の近くで独立して作業できるワークショップに参加する",
+            "交流レベルを選べるコミュニティガーデンに参加する",
+            "環境をコントロールできるカフェワークセッションを試す",
+            "社会的圧力が限られたグループ瞑想に参加する",
+            "セルフガイド美術館ツアーをする",
+            "図書館の読書グループに参加する",
+            "独立作業時間のある趣味クラスを試す",
+            "自分の体験を楽しめるコンサートやパフォーマンスに行く",
+            "1〜2人の友人と静かな食事をする",
+            "小グループでのハイキングや自然散歩に行く",
+            "他の人と交流しながら個別に探索できるフェスティバルを訪れる",
+            "カフェで一人で読書をしたり友達と過ごす",
+            "関心のあるオンラインコミュニティに参加する"
+        ]
+    },
+    
+    // 시간 기반 추천
+    time: {
+        "5min": [
+            "吐く息に集中して10回深呼吸をする",
+            "デスクで腕、首、肩のストレッチをする",
+            "マインドフルにお茶を入れて楽しむ",
+            "完全に集中して好きな曲を1曲聴く",
+            "感謝していることを3つ書き出す",
+            "簡単なフェイシャルマッサージや指圧をする",
+            "植物に水をやり健康状態をチェックする",
+            "新鮮な空気と日光を浴びるために外に出る",
+            "ボックスブリージング（4カウント吸って、保持して、吐いて、保持する）を実践する",
+            "クイックボディスキャン瞑想をする",
+            "窓の外を見て5分間景色を観察する",
+            "目を閉じて自然の音を聴く",
+            "水分補給のためにゆっくりと水を一杯飲む",
+            "考えなしに5分間天井を見つめる",
+            "一つの花や植物を詳しく観察する"
+        ],
+        "15min": [
+            "短いガイド付き瞑想アプリを試す",
+            "クイックヨガシーケンスをする",
+            "特定のプロンプトについて考えを書き留める",
+            "ブロック周辺を短く歩く",
+            "友達に簡単な確認の電話をする",
+            "短く集中した呼吸エクササイズをする",
+            "リラックスするプレイリストを聴く",
+            "家の小さな場所を整理する",
+            "クイックフェイスマスクやスキンケアルーティンを試す",
+            "楽しい本を数ページ読む",
+            "15分間ストレッチや軽い運動をする",
+            "15分間意識的に感謝していることを考える",
+            "創造的なスケッチや落書きを作成する",
+            "新しいレシピを閲覧または計画する",
+            "アロマテラピーで15分間リラックスする"
+        ],
+        "30min": [
+            "フルヨガセッションやホームワークアウトをする",
+            "周囲に注意を向けながら自然散歩をする",
+            "マインドフルネス瞑想を実践する",
+            "中断なく本や雑誌を読む",
+            "アラームを設定してパワーナップをとる",
+            "日記に一日や気持ちについて書く",
+            "マインドフルに簡単でヘルシーな食事を作る",
+            "リラックスする音楽プレイリストを聴く",
+            "エッセンシャルオイルで温かい入浴をする",
+            "趣味のプロジェクトに取り組む",
+            "30分間創作的な文章を書いたり物語を作成する",
+            "先延ばしにしていた掃除プロジェクトを始める",
+            "オンラインガイドで新しいスキルを学ぶ",
+            "絵を描いたりクラフト作業に集中する",
+            "30分間全ての電子機器をオフにして完全に休む"
+        ],
+        "1hour": [
+            "長い自然ハイキングに行く",
+            "ヨガやフィットネスクラスに参加する",
+            "博物館、庭園、新しい場所を訪れる",
+            "友達とコーヒーを飲む",
+            "セルフケアリチュアルと共に長めの入浴をする",
+            "急がずに創造的なプロジェクトに取り組む",
+            "新しいレシピをゼロから作る",
+            "楽器を練習する",
+            "スペースの徹底的な掃除や整理をする",
+            "集中と時間を要する趣味に取り組む",
+            "楽しい小説を1時間読む",
+            "全く新しいエリアや公園を探索する",
+            "お気に入りの映画やドキュメンタリーを見る",
+            "完全なボディセルフケアリチュアルに1時間かける",
+            "友達とボードゲームやパズルを楽しむ"
+        ]
+    }
+};
+
+        // 언어별 번역 라이브러리
+        const translations = {
+            "en": {
+                "title": "Find Your Perfect Relaxation",
+                "subtitle": "Personalized recommendations based on who you are",
+                "age": "Age:",
+                "personality": "Personality:",
+                "introverted": "Introverted",
+                "extroverted": "Extroverted",
+                "neutral": "Neutral",
+                "mbti": "MBTI Type:",
+                "mbtiPlaceholder": "e.g., INFP, ENFJ, ISTJ",
+                "introvert": "Introvert (I)",
+                "extrovert": "Extrovert (E)",
+                "intuitive": "Intuitive (N)",
+                "sensing": "Sensing (S)",
+                "feeling": "Feeling (F)",
+                "thinking": "Thinking (T)",
+                "perceiving": "Perceiving (P)",
+                "judging": "Judging (J)",
+                "ieLabel": "Introvert/Extrovert:",
+                "nsLabel": "Intuitive/Sensing:",
+                "ftLabel": "Feeling/Thinking:",
+                "pjLabel": "Perceiving/Judging:",
+                "selectedMbti": "Selected MBTI:",
+                "mood": "Current Mood:",
+                "tired": "Tired",
+                "stressed": "Stressed",
+                "sad": "Sad",
+                "energetic": "Energetic",
+                "anxious": "Anxious",
+                "bored": "Bored",
+                "happy": "Happy",
+                "angry": "Angry",
+                "weather": "Current Weather:",
+                "sunny": "Sunny",
+                "rainy": "Rainy",
+                "cloudy": "Cloudy",
+                "snowy": "Snowy",
+                "hot": "Hot",
+                "cold": "Cold",
+                "health": "Health Status:",
+                "healthy": "Healthy",
+                "mildlyUnwell": "Mildly Unwell",
+                "chronicPain": "Chronic Pain",
+                "limitedMobility": "Limited Mobility",
+                "time": "Available Time:",
+                "5min": "5 minutes",
+                "15min": "15 minutes",
+                "30min": "30 minutes",
+                "1hour": "1 hour or more",
+                "getRecommendation": "Get Personalized Recommendations",
+                "resultTitle": "Your Personalized Recommendations",
+                "pleaseComplete": "Please complete at least your mood, personality and available time.",
+                "basedOn": "Based on your",
+                "footerText": "© 2025 Relaxation Recommender. All recommendations are based on your personal profile.",
+                "loading": "Finding the perfect recommendations for you...",
+                "supportUs": "Support Us",
+                "donationText": "If you find this site helpful, consider making a small donation to support us!",
+                "donateFive": "Donate $5",
+                "donateTen": "Donate $10"
+            },
+            "ko": {
+                "title": "당신에게 맞는 휴식법 찾기",
+                "subtitle": "당신의 성향에 맞춘 맞춤형 추천",
+                "age": "나이:",
+                "personality": "성격:",
+                "introverted": "내향적",
+                "extroverted": "외향적",
+                "neutral": "중립적",
+                "mbti": "MBTI 유형:",
+                "mbtiPlaceholder": "예: INFP, ENFJ, ISTJ",
+                "introvert": "내향적 (I)",
+                "extrovert": "외향적 (E)",
+                "intuitive": "직관적 (N)",
+                "sensing": "감각적 (S)",
+                "feeling": "감정적 (F)",
+                "thinking": "논리적 (T)",
+                "perceiving": "인식형 (P)",
+                "judging": "판단형 (J)",
+                "ieLabel": "내향/외향:",
+                "nsLabel": "직관/감각:",
+                "ftLabel": "감정/사고:",
+                "pjLabel": "인식/판단:",
+                "selectedMbti": "선택된 MBTI:",
+                "mood": "현재 기분:",
+                "tired": "피곤함",
+                "stressed": "스트레스",
+                "sad": "슬픔",
+                "energetic": "활기찬",
+                "anxious": "불안함",
+                "bored": "지루함",
+                "happy": "행복함",
+                "angry": "화남",
+                "weather": "현재 날씨:",
+                "sunny": "맑음",
+                "rainy": "비",
+                "cloudy": "흐림",
+                "snowy": "눈",
+                "hot": "더움",
+                "cold": "추움",
+                "health": "건강 상태:",
+                "healthy": "건강함",
+                "mildlyUnwell": "약간 아픔",
+                "chronicPain": "만성 통증",
+                "limitedMobility": "제한된 활동성",
+                "time": "가용 시간:",
+                "5min": "5분",
+                "15min": "15분",
+                "30min": "30분",
+                "1hour": "1시간 이상",
+                "getRecommendation": "맞춤 추천 받기",
+                "resultTitle": "당신을 위한 맞춤형 추천",
+                "pleaseComplete": "적어도 기분, 성격, 가용 시간을 선택해 주세요.",
+                "basedOn": "다음을 기반으로 함:",
+                "footerText": "© 2025 휴식 추천 서비스. 모든 추천은 개인 프로필을 기반으로 합니다.",
+                "loading": "당신에게 가장 적합한 추천을 찾는 중...",
+                "supportUs": "후원하기",
+                "donationText": "이 사이트가 도움이 되셨다면, 작은 금액의 후원을 고려해 주세요!",
+                "donateFive": "5달러 후원",
+                "donateTen": "10달러 후원"
+            },
+            "zh": {
+                "title": "找到您的完美放松方式",
+                "subtitle": "基于您的个性特点的个性化推荐",
+                "age": "年龄:",
+                "personality": "性格:",
+                "introverted": "内向",
+                "extroverted": "外向",
+                "neutral": "中性",
+                "mbti": "MBTI类型:",
+                "mbtiPlaceholder": "例如: INFP, ENFJ, ISTJ",
+                "introvert": "内向型 (I)",
+                "extrovert": "外向型 (E)",
+                "intuitive": "直觉型 (N)",
+                "sensing": "感觉型 (S)",
+                "feeling": "情感型 (F)",
+                "thinking": "思考型 (T)",
+                "perceiving": "知觉型 (P)",
+                "judging": "判断型 (J)",
+                "ieLabel": "内向/外向:",
+                "nsLabel": "直觉/感觉:",
+                "ftLabel": "情感/思考:",
+                "pjLabel": "知觉/判断:",
+                "selectedMbti": "已选MBTI:",
+                "mood": "当前心情:",
+                "tired": "疲惫",
+                "stressed": "压力大",
+                "sad": "悲伤",
+                "energetic": "精力充沛",
+                "anxious": "焦虑",
+                "bored": "无聊",
+                "happy": "开心",
+                "angry": "愤怒",
+                "weather": "当前天气:",
+                "sunny": "晴天",
+                "rainy": "雨天",
+                "cloudy": "多云",
+                "snowy": "下雪",
+                "hot": "炎热",
+                "cold": "寒冷",
+                "health": "健康状况:",
+                "healthy": "健康",
+                "mildlyUnwell": "轻微不适",
+                "chronicPain": "慢性疼痛",
+                "limitedMobility": "行动不便",
+                "time": "可用时间:",
+                "5min": "5分钟",
+                "15min": "15分钟",
+                "30min": "30分钟",
+                "1hour": "1小时或更长",
+                "getRecommendation": "获取个性化推荐",
+                "resultTitle": "您的个性化推荐",
+                "pleaseComplete": "请至少选择您的心情、性格和可用时间。",
+                "basedOn": "基于您的",
+                "footerText": "© 2025 放松推荐器。所有推荐都基于您的个人资料。",
+                "loading": "正在为您寻找完美的推荐...",
+                "supportUs": "支持我们",
+                "donationText": "如果您觉得这个网站有帮助，请考虑小额捐款支持我们！",
+                "donateFive": "捐赠 $5",
+                "donateTen": "捐赠 $10"
+            },
+            "ja": {
+                "title": "あなたにぴったりのリラックス法",
+                "subtitle": "あなたの個性に基づくパーソナライズされた推奨",
+                "age": "年齢:",
+                "personality": "性格:",
+                "introverted": "内向的",
+                "extroverted": "外向的",
+                "neutral": "中立的",
+                "mbti": "MBTIタイプ:",
+                "mbtiPlaceholder": "例: INFP, ENFJ, ISTJ",
+                "introvert": "内向型 (I)",
+                "extrovert": "外向型 (E)",
+                "intuitive": "直感型 (N)",
+                "sensing": "感覚型 (S)",
+                "feeling": "感情型 (F)",
+                "thinking": "思考型 (T)",
+                "perceiving": "知覚型 (P)",
+                "judging": "判断型 (J)",
+                "ieLabel": "内向/外向:",
+                "nsLabel": "直感/感覚:",
+                "ftLabel": "感情/思考:",
+                "pjLabel": "知覚/判断:",
+                "selectedMbti": "選択されたMBTI:",
+                "mood": "現在の気分:",
+                "tired": "疲れている",
+                "stressed": "ストレス",
+                "sad": "悲しい",
+                "energetic": "元気",
+                "anxious": "不安",
+                "bored": "退屈",
+                "happy": "幸せ",
+                "angry": "怒り",
+                "weather": "現在の天気:",
+                "sunny": "晴れ",
+                "rainy": "雨",
+                "cloudy": "曇り",
+                "snowy": "雪",
+                "hot": "暑い",
+                "cold": "寒い",
+                "health": "健康状態:",
+                "healthy": "健康",
+                "mildlyUnwell": "軽い不調",
+                "chronicPain": "慢性的な痛み",
+                "limitedMobility": "行動制限あり",
+                "time": "利用可能な時間:",
+                "5min": "5分",
+                "15min": "15分",
+                "30min": "30分",
+                "1hour": "1時間以上",
+                "getRecommendation": "パーソナライズされた推奨を取得",
+                "resultTitle": "あなたへのパーソナライズされた推奨",
+                "pleaseComplete": "少なくとも気分、性格、利用可能な時間を選択してください。",
+                "basedOn": "基づいた条件:",
+                "footerText": "© 2025 リラックス推奨サービス。すべての推奨はあなたの個人プロフィールに基づいています。",
+                "loading": "あなたに最適な推奨を探しています...",
+                "supportUs": "サポートする",
+                "donationText": "このサイトが役立つと思われたら、小額の寄付をご検討ください！",
+                "donateFive": "$5を寄付",
+                "donateTen": "$10を寄付"
+            }
+        };
+
+        // 언어별 추천 항목 가져오기
+        function getLocalizedRecommendations(currentLang, category, selection) {
+            if (currentLang === 'en') {
+                return relaxationLibrary[category] && relaxationLibrary[category][selection] 
+                    ? relaxationLibrary[category][selection] : [];
+            } else if (currentLang === 'ko') {
+                return koRelaxationLibrary[category] && koRelaxationLibrary[category][selection] 
+                    ? koRelaxationLibrary[category][selection] : 
+                    relaxationLibrary[category] && relaxationLibrary[category][selection] 
+                    ? relaxationLibrary[category][selection] : [];
+            } else if (currentLang === 'zh') {
+                return zhRelaxationLibrary[category] && zhRelaxationLibrary[category][selection] 
+                    ? zhRelaxationLibrary[category][selection] : 
+                    relaxationLibrary[category] && relaxationLibrary[category][selection] 
+                    ? relaxationLibrary[category][selection] : [];
+            } else if (currentLang === 'ja') {
+                return jaRelaxationLibrary[category] && jaRelaxationLibrary[category][selection] 
+                    ? jaRelaxationLibrary[category][selection] : 
+                    relaxationLibrary[category] && relaxationLibrary[category][selection] 
+                    ? relaxationLibrary[category][selection] : [];
+            }
+            return relaxationLibrary[category] && relaxationLibrary[category][selection] 
+                ? relaxationLibrary[category][selection] : [];
+        }
+
+        // 현재 언어
+        let currentLang = "en";
+
+        // 버튼 그룹에서 선택된 아이템 가져오는 함수
+        function getSelection(groupId) {
+            const selected = document.querySelector(`#${groupId} button.selected`);
+            return selected ? selected.getAttribute('data-value') : null;
+        }
+
+        // 사용자 선택에 기반한 추천 생성
+        function generateRecommendations(userSelections) {
+            const {
+                age, 
+                personality, 
+                mbti, 
+                mood, 
+                weather, 
+                health, 
+                time
+            } = userSelections;
+            
+            let recommendations = [];
+            let usedRecommendations = new Set(); // 중복 방지
+            
+            // 나이 그룹 결정 (추후 활용 가능)
+            let ageGroup = "Adult"; // 기본값
+            if (age) {
+                const ageNum = parseInt(age);
+                if (ageNum < 13) ageGroup = "Child";
+                else if (ageNum < 20) ageGroup = "Teen";
+                else if (ageNum < 35) ageGroup = "YoungAdult";
+                else if (ageNum < 65) ageGroup = "Adult";
+                else ageGroup = "Senior";
+            }
+            
+            // 카테고리 우선순위 설정 (모든 카테고리에 비슷한 비중 부여)
+            const categories = [];
+            
+            // 기분 카테고리 추가
+            if (mood) {
+                categories.push({ category: 'mood', selected: mood, weight: 1 });
+            }
+            
+            // 날씨 카테고리 추가
+            if (weather) {
+                categories.push({ category: 'weather', selected: weather, weight: 1 });
+            }
+            
+            // 건강 상태 카테고리 추가
+            if (health) {
+                categories.push({ category: 'health', selected: health, weight: 1 });
+            }
+            
+            // 성격 카테고리 추가
+            if (personality) {
+                categories.push({ category: 'personality', selected: personality, weight: 1 });
+            }
+            
+            // MBTI 처리
+            if (mbti) {
+                if (mbti.length === 4) {
+                    // 완전한 MBTI 조합이 있으면 추가
+                    categories.push({ category: 'mbti', selected: mbti, weight: 1 });
+                } else {
+                    // 개별 MBTI 요소 처리
+                    for (let i = 0; i < mbti.length; i++) {
+                        const char = mbti.charAt(i);
+                        if (['I', 'E', 'N', 'S', 'F', 'T', 'P', 'J'].includes(char)) {
+                            categories.push({ category: 'mbti', selected: char, weight: 0.5 });
+                        }
+                    }
+                }
+            }
+            
+            // 시간 카테고리 (필터로 사용될 예정)
+            if (time) {
+                categories.push({ category: 'time', selected: time, weight: 1 });
+            }
+            
+            // 각 카테고리에서 추천 항목 수집
+            for (const { category, selected, weight } of categories) {
+                const localizedRecommendations = getLocalizedRecommendations(currentLang, category, selected);
+                
+                if (localizedRecommendations.length > 0) {
+                    // 이 카테고리에서 몇 개의 추천을 포함할지 결정 (각 카테고리에서 균등하게 가져오기)
+                    // 각 카테고리당 최대 2개씩 선택하되, 랜덤 요소 추가
+                    const maxRecommendationsPerCategory = 2;
+                    const shuffledRecs = [...localizedRecommendations].sort(() => 0.5 - Math.random());
+                    const selectedRecs = shuffledRecs.slice(0, maxRecommendationsPerCategory);
+                    
+                    // 중복 체크 후 추가
+                    for (const recommendation of selectedRecs) {
+                        if (!usedRecommendations.has(recommendation)) {
+                            recommendations.push({
+                                text: recommendation,
+                                score: weight,
+                                category: category,
+                                selection: selected
+                            });
+                            usedRecommendations.add(recommendation);
+                        }
+                    }
+                }
+            }
+            
+            // 시간 제약에 따른 필터링
+            if (time) {
+                const timeValue = time;
+                let timeThreshold;
+                
+                switch(timeValue) {
+                    case '5min':
+                        timeThreshold = 1; // 매우 짧은 활동만
+                        break;
+                    case '15min':
+                        timeThreshold = 2; // 짧은 활동
+                        break;
+                    case '30min':
+                        timeThreshold = 3; // 중간 길이 활동
+                        break;
+                    case '1hour':
+                        timeThreshold = 5; // 모든 활동
+                        break;
+                    default:
+                        timeThreshold = 5;
+                }
+                
+                // 텍스트 길이와 복잡성에 기반한 시간 점수 할당
+                recommendations = recommendations.map(rec => {
+                    let timeScore = 1;
+                    const text = rec.text.toLowerCase();
+                    
+                    // 더 오래 걸리는 활동 키워드
+                    if (text.includes('class') || text.includes('workshop') || 
+                        text.includes('project') || text.includes('organize') ||
+                        text.includes('clean') || text.includes('hike') ||
+                        text.includes('cook') || text.includes('bake') ||
+                        // 한국어 키워드
+                        text.includes('수업') || text.includes('워크샵') || 
+                        text.includes('프로젝트') || text.includes('정리') ||
+                        text.includes('청소') || text.includes('등산') ||
+                        text.includes('요리') || text.includes('베이킹') ||
+                        // 중국어 키워드
+                        text.includes('课程') || text.includes('工作坊') || 
+                        text.includes('项目') || text.includes('整理') ||
+                        text.includes('清洁') || text.includes('徒步') ||
+                        text.includes('烹饪') || text.includes('烘焙') ||
+                        // 일본어 키워드
+                        text.includes('クラス') || text.includes('ワークショップ') || 
+                        text.includes('プロジェクト') || text.includes('整理') ||
+                        text.includes('掃除') || text.includes('ハイキング') ||
+                        text.includes('料理') || text.includes('ベーキング')) {
+                        timeScore += 2;
+                    }
+                    
+                    // 중간 길이 활동 키워드
+                    if (text.includes('walk') || text.includes('journal') || 
+                        text.includes('read') || text.includes('practice') ||
+                        text.includes('meditation') || text.includes('bath') ||
+                        // 한국어 키워드
+                        text.includes('산책') || text.includes('일기') || 
+                        text.includes('읽기') || text.includes('연습') ||
+                        text.includes('명상') || text.includes('목욕') ||
+                        // 중국어 키워드
+                        text.includes('散步') || text.includes('日记') || 
+                        text.includes('阅读') || text.includes('练习') ||
+                        text.includes('冥想') || text.includes('洗澡') ||
+                        // 일본어 키워드
+                        text.includes('散歩') || text.includes('日記') || 
+                        text.includes('読書') || text.includes('練習') ||
+                        text.includes('瞑想') || text.includes('入浴')) {
+                        timeScore += 1;
+                    }
+                    
+                    return { ...rec, timeScore };
+                }).filter(rec => rec.timeScore <= timeThreshold);
+            }
+            
+            // 카테고리별로 다양하게 골고루 추천되도록 정렬
+            recommendations.sort((a, b) => {
+                // 우선 점수로 정렬
+                if (b.score !== a.score) return b.score - a.score;
+                // 점수가 같으면 카테고리가 다른 것을 더 앞에 배치
+                const categoryFrequencyA = recommendations.filter(r => r.category === a.category).length;
+                const categoryFrequencyB = recommendations.filter(r => r.category === b.category).length;
+                return categoryFrequencyA - categoryFrequencyB;
+            });
+            
+          // 상위 5개 추천 (또는 더 적은 경우 가능한 모든 추천) 반환
+            const topRecommendations = recommendations.slice(0, 5);
+            
+            return topRecommendations;
+        }
+
+        // 페이지 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 버튼 선택 기능 설정
+            document.querySelectorAll('.button-group button').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 같은 그룹 내 다른 버튼에서 선택 클래스 제거
+                    this.parentElement.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    // 클릭된 버튼에 선택 클래스 추가
+                    this.classList.add('selected');
+                });
+            });
+            
+            // 언어 버튼 설정
+            document.querySelectorAll('.language-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    changeLanguage(this.getAttribute('data-lang'));
+                });
+            });
+            
+            // MBTI 선택 UI 설정
+            const mbtiParts = {
+                I: null, // 내향/외향
+                N: null, // 직관/감각
+                F: null, // 감정/사고
+                P: null  // 인식/판단
+            };
+            
+            // MBTI 버튼 설정
+            setupMbtiButtons('I', 'E', 'btn-mbti-i', 'btn-mbti-e');
+            setupMbtiButtons('N', 'S', 'btn-mbti-n', 'btn-mbti-s');
+            setupMbtiButtons('F', 'T', 'btn-mbti-f', 'btn-mbti-t');
+            setupMbtiButtons('P', 'J', 'btn-mbti-p', 'btn-mbti-j');
+            
+            // MBTI 버튼 쌍 설정 함수
+            function setupMbtiButtons(value1, value2, id1, id2) {
+                const btn1 = document.getElementById(id1);
+                const btn2 = document.getElementById(id2);
+                
+                if (btn1 && btn2) {
+                    btn1.addEventListener('click', function() {
+                        btn1.classList.add('selected');
+                        btn2.classList.remove('selected');
+                        
+                        // 쌍의 첫 번째 속성 저장 (I, N, F, P)
+                        if (value1 === 'I') mbtiParts.I = value1;
+                        else if (value1 === 'N') mbtiParts.N = value1;
+                        else if (value1 === 'F') mbtiParts.F = value1;
+                        else if (value1 === 'P') mbtiParts.P = value1;
+                        
+                        updateSelectedMbti();
+                    });
+                    
+                    btn2.addEventListener('click', function() {
+                        btn2.classList.add('selected');
+                        btn1.classList.remove('selected');
+                        
+                        // 쌍의 두 번째 속성 저장 (E, S, T, J)
+                        if (value1 === 'I') mbtiParts.I = value2;
+                        else if (value1 === 'N') mbtiParts.N = value2;
+                        else if (value1 === 'F') mbtiParts.F = value2;
+                        else if (value1 === 'P') mbtiParts.P = value2;
+                        
+                        updateSelectedMbti();
+                    });
+                }
+            }
+            
+            // 선택된 MBTI 업데이트 함수
+            function updateSelectedMbti() {
+                const selectedMbtiSpan = document.getElementById('selected-mbti');
+                if (!selectedMbtiSpan) return;
+                
+                let mbtiString = '';
+                
+                // I/E 선택
+                mbtiString += mbtiParts.I || '-';
+                
+                // N/S 선택
+                mbtiString += mbtiParts.N || '-';
+                
+                // F/T 선택
+                mbtiString += mbtiParts.F || '-';
+                
+                // P/J 선택
+                mbtiString += mbtiParts.P || '-';
+                
+                selectedMbtiSpan.textContent = mbtiString;
+                
+                // mbti 입력 필드 업데이트 - 완전한 MBTI가 선택된 경우에만
+                const mbtiInput = document.getElementById('mbti');
+                if (mbtiInput && !mbtiString.includes('-')) {
+                    mbtiInput.value = mbtiString;
+                }
+            }
+            
+            // 추천 버튼 설정
+            document.getElementById('recommendBtn').addEventListener('click', function() {
+                // 사용자 선택 가져오기
+                const mbtiInput = document.getElementById('mbti');
+                const selectedMbtiSpan = document.getElementById('selected-mbti');
+                let mbtiValue = '';
+                
+                // 완성된 MBTI 선택 또는 입력값 사용
+                if (selectedMbtiSpan && !selectedMbtiSpan.textContent.includes('-')) {
+                    mbtiValue = selectedMbtiSpan.textContent;
+                } else if (mbtiInput.value) {
+                    mbtiValue = mbtiInput.value.toUpperCase().trim();
+                }
+                
+                const userSelections = {
+                    age: document.getElementById('age').value,
+                    personality: getSelection('personality'),
+                    mbti: mbtiValue,
+                    mood: getSelection('mood'),
+                    weather: getSelection('weather'),
+                    health: getSelection('health'),
+                    time: getSelection('time')
+                };
+                
+                // 필수 선택 항목 검증
+                if (!userSelections.mood || !userSelections.personality || !userSelections.time) {
+                    alert(translations[currentLang].pleaseComplete);
+                    return;
+                }
+                
+                // 로딩 메시지 표시
+                const resultDiv = document.getElementById('result');
+                const recommendationsList = document.getElementById('recommendations');
+                resultDiv.style.display = 'block';
+                recommendationsList.innerHTML = `<div style="text-align: center; padding: 20px;">${translations[currentLang].loading}</div>`;
+                
+                // 추천 생성 (로딩 효과를 위한 짧은 지연)
+                setTimeout(() => {
+                    const recommendations = generateRecommendations(userSelections);
+                    
+                    // 이전 결과 지우기
+                    recommendationsList.innerHTML = '';
+                    
+                    // 추천 표시
+                    if (recommendations.length > 0) {
+                        recommendations.forEach(rec => {
+                            const li = document.createElement('li');
+                            li.className = 'recommendation-item';
+                            
+                            // 카테고리와 선택 이름 번역
+                            const categoryName = translations[currentLang][rec.category] || rec.category;
+                            const selectionName = translations[currentLang][rec.selection.toLowerCase()] || rec.selection;
+                            
+                            li.innerHTML = `
+                                ${rec.text}
+                                <span class="category">${translations[currentLang].basedOn} ${selectionName} ${categoryName}</span>
+                            `;
+                            recommendationsList.appendChild(li);
+                        });
+                    } else {
+                        // 추천을 찾지 못한 경우
+                        recommendationsList.innerHTML = '<li class="recommendation-item">No matching recommendations found. Try different selections.</li>';
+                    }
+                }, 800);
+            });
+        });
+
+        // 언어 변경 함수
+        function changeLanguage(lang) {
+            if (!translations[lang]) return; // 잘못된 언어
+            
+            currentLang = lang;
+            
+            // 언어 버튼 업데이트
+            document.querySelectorAll('.language-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // 페이지 텍스트 업데이트
+            document.getElementById('header-title').textContent = translations[lang].title;
+            document.getElementById('header-subtitle').textContent = translations[lang].subtitle;
+            document.getElementById('label-age').textContent = translations[lang].age;
+            document.getElementById('label-personality').textContent = translations[lang].personality;
+            document.getElementById('btn-introverted').textContent = translations[lang].introverted;
+            document.getElementById('btn-extroverted').textContent = translations[lang].extroverted;
+            document.getElementById('btn-neutral').textContent = translations[lang].neutral;
+            
+            document.getElementById('label-mbti').textContent = translations[lang].mbti;
+            
+            // MBTI 선택기 라벨 업데이트
+            const mbtiLabels = document.querySelectorAll('.mbti-label');
+            if (mbtiLabels.length >= 4) {
+                mbtiLabels[0].textContent = translations[lang].ieLabel;
+                mbtiLabels[1].textContent = translations[lang].nsLabel;
+                mbtiLabels[2].textContent = translations[lang].ftLabel;
+                mbtiLabels[3].textContent = translations[lang].pjLabel;
+            }
+            
+            // MBTI 버튼 업데이트
+            document.getElementById('btn-mbti-i').textContent = translations[lang].introvert;
+            document.getElementById('btn-mbti-e').textContent = translations[lang].extrovert;
+            document.getElementById('btn-mbti-n').textContent = translations[lang].intuitive;
+            document.getElementById('btn-mbti-s').textContent = translations[lang].sensing;
+            document.getElementById('btn-mbti-f').textContent = translations[lang].feeling;
+            document.getElementById('btn-mbti-t').textContent = translations[lang].thinking;
+            document.getElementById('btn-mbti-p').textContent = translations[lang].perceiving;
+            document.getElementById('btn-mbti-j').textContent = translations[lang].judging;
+            
+            // "선택된 MBTI" 텍스트 업데이트
+            const mbtiResultDiv = document.querySelector('.mbti-result');
+            if (mbtiResultDiv) {
+                const selectedMbti = document.getElementById('selected-mbti').textContent;
+                document.getElementById('selected-mbti-label').textContent = translations[lang].selectedMbti;
+            }
+            
+            document.getElementById('label-mood').textContent = translations[lang].mood;
+            document.getElementById('btn-tired').textContent = translations[lang].tired;
+            document.getElementById('btn-stressed').textContent = translations[lang].stressed;
+            document.getElementById('btn-sad').textContent = translations[lang].sad;
+            document.getElementById('btn-energetic').textContent = translations[lang].energetic;
+            document.getElementById('btn-anxious').textContent = translations[lang].anxious;
+            document.getElementById('btn-bored').textContent = translations[lang].bored;
+            document.getElementById('btn-happy').textContent = translations[lang].happy;
+            document.getElementById('btn-angry').textContent = translations[lang].angry;
+            
+            document.getElementById('label-weather').textContent = translations[lang].weather;
+            document.getElementById('btn-sunny').textContent = translations[lang].sunny;
+            document.getElementById('btn-rainy').textContent = translations[lang].rainy;
+            document.getElementById('btn-cloudy').textContent = translations[lang].cloudy;
+            document.getElementById('btn-snowy').textContent = translations[lang].snowy;
+            document.getElementById('btn-hot').textContent = translations[lang].hot;
+            document.getElementById('btn-cold').textContent = translations[lang].cold;
+            
+            document.getElementById('label-health').textContent = translations[lang].health;
+            document.getElementById('btn-healthy').textContent = translations[lang].healthy;
+            document.getElementById('btn-mildly-unwell').textContent = translations[lang].mildlyUnwell;
+            document.getElementById('btn-chronic-pain').textContent = translations[lang].chronicPain;
+            document.getElementById('btn-limited-mobility').textContent = translations[lang].limitedMobility;
+            
+            document.getElementById('label-time').textContent = translations[lang].time;
+            document.getElementById('btn-5min').textContent = translations[lang]['5min'];
+            document.getElementById('btn-15min').textContent = translations[lang]['15min'];
+            document.getElementById('btn-30min').textContent = translations[lang]['30min'];
+            document.getElementById('btn-1hour').textContent = translations[lang]['1hour'];
+            
+            document.getElementById('recommendBtn').textContent = translations[lang].getRecommendation;
+            document.getElementById('result-title').textContent = translations[lang].resultTitle;
+            document.getElementById('footer-text').textContent = translations[lang].footerText;
+            
+            // 후원 섹션 업데이트
+            document.getElementById('donation-title').textContent = translations[lang].supportUs;
+            document.getElementById('donation-text').textContent = translations[lang].donationText;
+            document.getElementById('donate-five').textContent = translations[lang].donateFive;
+            document.getElementById('donate-ten').textContent = translations[lang].donateTen;
+            
+            // 결과 항목이 표시된 경우 업데이트
+            if (document.getElementById('result').style.display !== 'none') {
+                // 현재 결과가 표시되고 있다면 결과도 새 언어로 업데이트
+                const recommendations = document.querySelectorAll('.recommendation-item');
+                
+                if (recommendations.length > 0) {
+                    // 추천 결과가 있는 경우, 추천 버튼 클릭 효과 다시 실행하여 번역된 결과 표시
+                    document.getElementById('recommendBtn').click();
+                }
+            }
+        }
+        
+    </script>
+    <script>
+        // 언어별 번역 라이브러리에 공유 관련 텍스트 추가
+        const shareTranslations = {
+            "en": {
+                "shareTitle": "Share Your Recommendations",
+                "shareSuccess": "Link copied to clipboard! Now you can paste it in your social media.",
+                "shareText": "Check out my personalized relaxation recommendations!"
+            },
+            "ko": {
+                "shareTitle": "맞춤 추천 공유하기",
+                "shareSuccess": "링크가 클립보드에 복사되었습니다! 소셜 미디어에 붙여넣을 수 있습니다.",
+                "shareText": "내 맞춤형 휴식 추천을 확인해보세요!"
+            },
+            "zh": {
+                "shareTitle": "分享您的推荐",
+                "shareSuccess": "链接已复制到剪贴板！现在您可以将其粘贴到社交媒体中。",
+                "shareText": "看看我的个性化放松建议！"
+            },
+            "ja": {
+                "shareTitle": "おすすめをシェアする",
+                "shareSuccess": "リンクがクリップボードにコピーされました！ソーシャルメディアに貼り付けることができます。",
+                "shareText": "私のパーソナライズされたリラクゼーション推奨をチェックしてください！"
+            }
+        };
+        
+        // 기존 번역 라이브러리에 공유 관련 텍스트 추가
+        for (const lang in translations) {
+            translations[lang] = {...translations[lang], ...shareTranslations[lang]};
+        }
+        
+        // 공유 기능 초기화
+        function initSocialSharing() {
+            const facebookBtn = document.getElementById('share-facebook');
+            const instagramBtn = document.getElementById('share-instagram');
+            const tiktokBtn = document.getElementById('share-tiktok');
+            const shareTitle = document.getElementById('share-title');
+            
+            // 언어 변경 핸들러 업데이트
+            const originalChangeLanguage = changeLanguage;
+            changeLanguage = function(lang) {
+                originalChangeLanguage(lang);
+                
+                // 공유 버튼 텍스트 업데이트
+                if (shareTitle) {
+                    shareTitle.textContent = translations[lang].shareTitle || "Share Your Recommendations";
+                }
+            };
+            
+            // 페이스북 공유 버튼 클릭 이벤트
+            if (facebookBtn) {
+                facebookBtn.addEventListener('click', function() {
+                    shareToSocialMedia('facebook');
+                });
+            }
+            
+            // 인스타그램 공유 버튼 클릭 이벤트
+            if (instagramBtn) {
+                instagramBtn.addEventListener('click', function() {
+                    shareToSocialMedia('instagram');
+                });
+            }
+            
+            // 틱톡 공유 버튼 클릭 이벤트
+            if (tiktokBtn) {
+                tiktokBtn.addEventListener('click', function() {
+                    shareToSocialMedia('tiktok');
+                });
+            }
+        }
+        
+        // 소셜 미디어로 공유하는 함수
+        function shareToSocialMedia(platform) {
+            // 현재 표시된 추천 수집
+            const recommendations = document.querySelectorAll('.recommendation-item');
+            let recommendationTexts = [];
+            
+            recommendations.forEach(rec => {
+                // HTML 태그를 제외한 텍스트만 가져옴
+                const text = rec.textContent.trim();
+                recommendationTexts.push(text);
+            });
+            
+            // 공유할 텍스트 생성
+            const shareText = translations[currentLang].shareText + "\n\n" + 
+                             recommendationTexts.join("\n") + 
+                             "\n\n" + window.location.href;
+            
+            // 소셜 미디어에 따른 공유 방법 처리
+            switch (platform) {
+                case 'facebook':
+                    // 페이스북 공유 URL 생성
+                    const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodeURIComponent(shareText)}`;
+                    window.open(fbShareUrl, '_blank');
+                    break;
+                    
+                case 'instagram':
+                case 'tiktok':
+                    // 인스타그램과 틱톡은 직접 API가 없으므로 클립보드에 복사
+                    copyToClipboard(shareText);
+                    showShareSuccess();
+                    break;
+            }
+        }
+        
+        // 클립보드에 텍스트 복사하는 함수
+        function copyToClipboard(text) {
+            // 임시 textarea 생성
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';  // 화면에 보이지 않게 설정
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                // 클립보드에 복사
+                document.execCommand('copy');
+                console.log('텍스트가 클립보드에 복사되었습니다.');
+            } catch (err) {
+                console.error('클립보드 복사 실패:', err);
+            }
+            
+            // 임시 요소 제거
+            document.body.removeChild(textarea);
+        }
+        
+        // 공유 성공 메시지 표시
+        function showShareSuccess() {
+            // 이전 메시지 제거
+            const oldMsg = document.querySelector('.share-success');
+            if (oldMsg) {
+                oldMsg.remove();
+            }
+            
+            // 새 메시지 생성
+            const msg = document.createElement('div');
+            msg.className = 'share-success';
+            msg.textContent = translations[currentLang].shareSuccess;
+            
+            // 공유 컨테이너에 추가
+            const container = document.querySelector('.social-share-container');
+            if (container) {
+                container.appendChild(msg);
+                msg.style.display = 'block';
+                
+                // 5초 후 메시지 숨기기
+                setTimeout(() => {
+                    msg.style.opacity = '0';
+                    setTimeout(() => {
+                        msg.remove();
+                    }, 300);
+                }, 5000);
+            }
+        }
+        
+        // 페이지 로드 시 공유 기능 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            // 기존 초기화 코드 이후에 실행
+            const originalInitCode = document.querySelector('script:not([src])').textContent;
+            
+            // 기존 초기화 코드 실행 후 소셜 공유 초기화 추가
+            const updatedInitCode = originalInitCode + '\n\n// 소셜 공유 기능 초기화\ninitSocialSharing();';
+            
+            // 원본 스크립트 태그 제거 후 새 스크립트 추가
+            const originalScript = document.querySelector('script:not([src])');
+            if (originalScript) {
+                const newScript = document.createElement('script');
+                newScript.textContent = updatedInitCode;
+                originalScript.parentNode.replaceChild(newScript, originalScript);
+            }
+        });
+    </script>
+</body>
+</html>
